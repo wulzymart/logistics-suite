@@ -37,10 +37,15 @@ import {
   setInsurance,
   setTotal,
   setCustomerDetails,
+  setProcessedBy,
+  setOrderId,
 } from "../../redux/order.slice";
 import { useAppConfigContext } from "../../contexts/AppConfig.context";
+import { useUserContext } from "../../contexts/CurrentUser.Context";
 
 const OrderForm = () => {
+  const { currentUser } = useUserContext();
+  console.log(currentUser);
   const dispatch = useDispatch();
   const customer = useSelector((state) => state.customer);
   const order = useSelector((state) => state.order);
@@ -51,6 +56,7 @@ const OrderForm = () => {
 
     stationsList,
   } = useAppConfigContext();
+  console.log(states);
   const shipmentCartegoryOptions = Object.keys(appBrain.shipmentCartegory).map(
     (key) => key
   );
@@ -215,7 +221,7 @@ const OrderForm = () => {
                 value={order.receiver.address.lga}
                 options={
                   order.receiver.address.state
-                    ? states[order.receiver.address.state]
+                    ? states[order.receiver.address.state].lgas
                     : []
                 }
                 handleChange={(e) => dispatch(setReceiverLga(e.target.value))}
@@ -463,6 +469,8 @@ const OrderForm = () => {
         <div className="mt-8">
           <CustomButton
             handleClick={() => {
+              dispatch(setProcessedBy(currentUser.id));
+              dispatch(setOrderId());
               dispatch(setTotal(order.subtotal + order.VAT + order.insurance));
             }}
             children={"Calculate Total"}

@@ -57,6 +57,7 @@ export const AppConfigContextProvider = ({ children }) => {
         Object.assign(stationsByName, object);
       });
       setStations(stationsByName);
+
       const list = Object.keys(stationsByName);
       setStationsList(list);
     });

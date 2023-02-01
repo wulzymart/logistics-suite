@@ -27,6 +27,7 @@ export const links = [
       {
         name: "Summary",
         icon: <MdSummarize />,
+        link: "/",
       },
       {
         name: "Profile",
@@ -47,10 +48,12 @@ export const links = [
       {
         name: "OutBound",
         icon: <AiOutlineSend />,
+        link: "/outbound",
       },
       {
         name: "Inbound",
         icon: <RiLoginBoxFill />,
+        link: "/inbound",
       },
       {
         name: "Ware House",
@@ -73,7 +76,7 @@ export const links = [
         link: "/assign-trip",
       },
       {
-        name: "Transhipment",
+        name: "Transshipment",
         icon: <GiBattleship />,
       },
     ],

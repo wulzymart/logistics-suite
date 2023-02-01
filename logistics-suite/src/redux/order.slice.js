@@ -1,13 +1,12 @@
 import { createSlice } from "@reduxjs/toolkit";
 import { idGenerator } from "../AppBrain";
+let date = new Date();
 
 const initialState = {
-  id: idGenerator(8),
-  dateCreated: new Date().toUTCString(),
+  id: "",
   customerId: "",
   customerName: "",
   customerAddress: "",
-
   originStation: "",
   originStationId: "",
   destinationStation: "",
@@ -15,6 +14,13 @@ const initialState = {
   intraState: "No",
   intraCity: "No",
   deliveryType: "",
+  deliveryStatus: "",
+  trackingInfo: [
+    {
+      info: "Order Accepted at Origin Station",
+      time: date.toLocaleString(),
+    },
+  ],
   deliveryService: "",
   receiver: {
     firstName: "",
@@ -47,12 +53,16 @@ const initialState = {
   receiptInfo: "",
   paid: false,
   processedBy: "",
+  tripId: "",
 };
 const orderSlice = createSlice({
   name: "order",
   initialState,
   reducers: {
     resetOrder: () => initialState,
+    setOrderId(state) {
+      state.id = idGenerator(8);
+    },
     setIntraCity(state, action) {
       state.intraCity = action.payload;
     },
@@ -197,5 +207,6 @@ export const {
   setDestinationStationId,
   setCustomerDetails,
   resetOrder,
+  setOrderId,
 } = orderSlice.actions;
 export default orderSlice.reducer;

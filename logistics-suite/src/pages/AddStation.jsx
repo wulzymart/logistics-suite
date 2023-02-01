@@ -46,7 +46,7 @@ const AddStation = () => {
       phoneNumber1: phone1,
       phoneNumber2: phone2,
       id,
-      address: { state, lga, stretAddress: strAddress },
+      address: { state, lga, streetAddress: strAddress },
     };
     if (snapShot.empty) {
       const stationRef = doc(stationsRef, id);

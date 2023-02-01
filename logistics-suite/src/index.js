@@ -10,6 +10,7 @@ import { registerLicense } from "@syncfusion/ej2-base";
 import { ThemeContextProvider } from "./contexts/themeContext";
 import { AppConfigContextProvider } from "./contexts/AppConfig.context";
 import { UserContextProvider } from "./contexts/CurrentUser.Context";
+import { TableProvider } from "./contexts/TablesContext";
 
 // Registering Syncfusion license key
 registerLicense(
@@ -24,7 +25,9 @@ root.render(
         <ThemeContextProvider>
           <UserContextProvider>
             <AppConfigContextProvider>
-              <App />
+              <TableProvider>
+                <App />
+              </TableProvider>
             </AppConfigContextProvider>
           </UserContextProvider>
         </ThemeContextProvider>

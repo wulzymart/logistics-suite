@@ -3,6 +3,7 @@ import Input from "../input/input";
 import { useSelector, useDispatch } from "react-redux";
 import {
   setStaffEmail,
+  setStaffGender,
   setStaffFirstName,
   setStaffLastName,
   setStaffPhoneNumber,
@@ -79,8 +80,16 @@ const StaffReg = () => {
         </div>
       </div>
       <div className="w-full mb-10">
-        <div className="flex flex-wrap gap-x-[4%] gap-y-8">
-          <div className="w-full md:w-[48%] ">
+        <div className="flex flex-wrap gap-x-[5%] gap-y-8">
+          <div className="w-full md:w-[30%]">
+            <p className="font-medium mb-5">Gender</p>
+            <Select
+              options={["Male", "Female"]}
+              value={staff.gender}
+              handleChange={(e) => dispatch(setStaffGender(e.target.value))}
+            />
+          </div>
+          <div className="w-full md:w-[30%] ">
             <p className="font-medium mb-5">Date of Birth</p>
             <ReactDatePicker
               selected={displayedDate}
@@ -92,7 +101,7 @@ const StaffReg = () => {
               className="w-full rounded-lg"
             />
           </div>
-          <div className="w-full md:w-[48%]">
+          <div className="w-full md:w-[30%]">
             <p className="font-medium mb-5">Qualification</p>
             <Input
               placeholder={"e.g 'B.Sc (example)'"}

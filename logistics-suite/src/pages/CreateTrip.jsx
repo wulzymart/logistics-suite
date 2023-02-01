@@ -1,4 +1,4 @@
-import { doc, setDoc } from "firebase/firestore";
+import { doc, serverTimestamp, setDoc } from "firebase/firestore";
 import React, { useState } from "react";
 
 import { idGenerator } from "../AppBrain";
@@ -23,7 +23,7 @@ const CreateTrip = () => {
     drivers,
     intVehList,
     statVehList,
-    comparePin
+    comparePin,
   } = useAppConfigContext();
   const [id, setId] = useState(idGenerator(3));
   const { currentUser } = useUserContext();
@@ -61,7 +61,7 @@ const CreateTrip = () => {
       };
       const tripRef = doc(db, "trips", trip.id);
       try {
-        await setDoc(tripRef, trip);
+        await setDoc(tripRef, { ...trip, dateCreated: serverTimestamp() });
         alert("New trip Successfully Created");
         closeModal("pin-modal");
         closeModal("create-trip-modal");

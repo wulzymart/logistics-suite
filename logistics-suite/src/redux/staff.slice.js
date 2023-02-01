@@ -7,6 +7,7 @@ const staffSlice = createSlice({
     firstName: "",
     lastName: "",
     phoneNumber: "",
+    gender: "",
     email: "",
     password: "",
     qualification: "",
@@ -56,6 +57,9 @@ const staffSlice = createSlice({
     },
     setStaffRole(state, action) {
       state.role = action.payload;
+    },
+    setStaffGender(state, action) {
+      state.gender = action.payload;
     },
     setStaffGrossSalary(state, action) {
       state.grossSalary = action.payload;
@@ -150,5 +154,6 @@ export const {
   setNOKName,
   setNOKPhone,
   setStaffStationId,
+  setStaffGender,
 } = staffSlice.actions;
 export default staffSlice.reducer;

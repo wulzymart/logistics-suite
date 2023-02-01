@@ -1,4 +1,5 @@
 import { createSlice } from "@reduxjs/toolkit";
+import { serverTimestamp } from "firebase/firestore";
 import { idGenerator } from "../AppBrain";
 
 const initialState = {
@@ -17,7 +18,7 @@ const initialState = {
     streetAddress: "",
   },
 
-  dateRegistered: new Date().toUTCString(),
+  dateRegistered: serverTimestamp(),
 };
 export const customerSlice = createSlice({
   name: "customer",

@@ -1,7 +1,7 @@
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 
 import Layout from "./components/Layout";
-import Dashboard from "./pages/Dashboard";
+import Summary from "./pages/Summary";
 import Login from "./pages/Login";
 
 import NewWaybil from "./pages/NewWaybil";
@@ -24,6 +24,11 @@ import { useAppConfigContext } from "./contexts/AppConfig.context";
 import AddVehicle from "./pages/Add Vehicle";
 import Profile from "./pages/Profile";
 import { useUserContext } from "./contexts/CurrentUser.Context";
+import OrderPage from "./pages/OrderPage";
+import CustomerPage from "./pages/CustomerPage";
+import Inbound from "./pages/Inbound";
+import Outbound from "./pages/Outbound";
+import { TableProvider } from "./contexts/TablesContext";
 
 function App() {
   const { currentMode } = useThemeContext();
@@ -44,7 +49,7 @@ function App() {
                     <Route
                       index
                       element={
-                        currentUser !== "loading" ? <Dashboard /> : "loading"
+                        currentUser !== "loading" ? <Summary /> : "loading"
                       }
                     />
                     <Route path="profile">
@@ -63,7 +68,11 @@ function App() {
                       />
                     </Route>
                     <Route path="create-trip" element={<CreateTrip />} />
+                    <Route path="inbound" element={<Inbound />} />
+                    <Route path="outbound" element={<Outbound />} />
                     <Route path="assign-trip" element={<AssignTrip />} />
+                    <Route path="order" element={<OrderPage />} />
+                    <Route path="customer" element={<CustomerPage />} />
                     <Route path="admin">
                       <Route path="staff-registration" element={<NewStaff />} />
                       <Route path="stations" element={<ManageStations />} />
