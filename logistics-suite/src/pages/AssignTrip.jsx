@@ -6,11 +6,13 @@ import {
   onSnapshot,
   orderBy,
   query,
+  serverTimestamp,
   setDoc,
   Timestamp,
   where,
 } from "firebase/firestore";
 import React, { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import CustomButton from "../components/button/button";
 import Modal from "../components/Modal";
 import PinModal from "../components/PinModal";
@@ -25,6 +27,7 @@ const AssignTrip = () => {
   const { openModal, closeModal } = useThemeContext();
   const { comparePin } = useAppConfigContext();
   const [noTripOrders, setNoTripOrders] = useState([]);
+  const [transhippedOutOrders, setTransOutOrders] = useState([]);
   const orders = {};
   noTripOrders.map((item) => Object.assign(orders, { [item.id]: item }));
   const { stationName, currentUser } = useUserContext();
@@ -51,14 +54,24 @@ const AssignTrip = () => {
       const driverPhone = trips[tripId].driverPhone;
       const attendantPhone = trips[tripId].attendantPhone;
       let date = new Date();
-      const trackingInfo = trips[tripId].trackingInfo;
-      const newTrackingInfo = {
-        info: "Your order has been booked for dispatch, awaiting shipment",
-        time: date.toLocaleString(),
-      };
-      trackingInfo.push(newTrackingInfo);
+
       selectedIds.forEach(async (id) => {
+        const trackingInfo = orders[id].trackingInfo;
+        const { transship, transshipIn, transshipOut } = orders[id];
+        const newTrackingInfo = {
+          info: !transshipOut
+            ? "Your order has been booked for dispatch, awaiting shipment"
+            : "Your order has been assigned a new vehicle and will soon continue to the destination station",
+          time: date.toLocaleString(),
+        };
+        trackingInfo.push(newTrackingInfo);
+        const history = orders[id].history;
         const orderRef = doc(db, "orders", id);
+        history.push({
+          info: `Trip ${tripId} assigned by ${currentUser.displayName}`,
+          time: date.toLocaleString(),
+        });
+
         await setDoc(
           orderRef,
           {
@@ -67,8 +80,11 @@ const AssignTrip = () => {
             attendantName,
             attendantPhone,
             tripId,
-            deliveryStatus: "Booked for Dispatch",
+            deliveryStatus: !transshipOut
+              ? "Booked for Dispatch"
+              : "Set to leave transfer station",
             trackingInfo,
+            history,
           },
           { merge: true }
         ).catch((err) => alert("error: ", err));
@@ -84,32 +100,42 @@ const AssignTrip = () => {
     {
       field: "id",
       headerName: "Tracking Id",
-      headerClassName: "bg-blue-200 ",
+
       width: 150,
+      renderCell: (param) => {
+        return <Link to={`/orders/${param.value}`}>{param.value}</Link>;
+      },
     },
     {
       field: "customerName",
       headerName: "Customer's Name",
-      headerClassName: "bg-blue-200 ",
+
+      width: 150,
+    },
+    {
+      field: "transferStation",
+      headerName: "Transfer Station",
+
       width: 150,
     },
     {
       field: "destinationStation",
       headerName: "Destination Station",
-      headerClassName: "bg-blue-200 ",
+
       width: 150,
     },
+
     {
       field: "receiverName",
       headerName: "Receiver's Name",
-      headerClassName: "bg-blue-200 ",
+
       width: 150,
       valueGetter: getReceiverName,
     },
     {
       field: "receiverAddress",
       headerName: "Receiver's Address",
-      headerClassName: "bg-blue-200 ",
+
       width: 150,
       valueGetter: getReceiverAddress,
     },
@@ -117,19 +143,19 @@ const AssignTrip = () => {
     {
       field: "tripId",
       headerName: "Trip Id",
-      headerClassName: "bg-blue-200 ",
+
       width: 150,
     },
     {
       field: "deliveryStatus",
       headerName: "Delivery Status",
-      headerClassName: "bg-blue-200 ",
+
       width: 150,
     },
     {
       field: "paymentStatus",
       headerName: "Payment Status",
-      headerClassName: "bg-blue-200 ",
+
       width: 150,
     },
   ];
@@ -137,32 +163,38 @@ const AssignTrip = () => {
     {
       field: "id",
       headerName: "Tracking Id",
-      headerClassName: "bg-blue-200 ",
+
       width: 150,
     },
     {
       field: "customerName",
       headerName: "Customer's Name",
-      headerClassName: "bg-blue-200 ",
+
+      width: 150,
+    },
+    {
+      field: "transferStation",
+      headerName: "Transfer Station",
+
       width: 150,
     },
     {
       field: "destinationStation",
       headerName: "Destination Station",
-      headerClassName: "bg-blue-200 ",
+
       width: 150,
     },
     {
       field: "receiverName",
       headerName: "Receiver's Name",
-      headerClassName: "bg-blue-200 ",
+
       width: 150,
       valueGetter: getReceiverName,
     },
     {
       field: "receiverAddress",
       headerName: "Receiver's Address",
-      headerClassName: "bg-blue-200 ",
+
       width: 150,
       valueGetter: getReceiverAddress,
     },
@@ -171,7 +203,7 @@ const AssignTrip = () => {
   useEffect(() => {
     let today = new Date();
     today = today.toDateString();
-    console.log(today);
+
     const tripsRef = collection(db, "trips");
 
     const getTrips = async () => {
@@ -188,7 +220,7 @@ const AssignTrip = () => {
             Object.assign(tempData, { [doc.data().id]: doc.data() });
             tempList.push(doc.data().id);
           });
-          console.log(tempData);
+
           setTrips(tempData);
           setTripsList(tempList);
         }
@@ -201,8 +233,12 @@ const AssignTrip = () => {
     const unassignedTripQuery = query(
       ordersRef,
       where("originStation", "==", stationName),
-      where("tripId", "==", ""),
-      orderBy("dateCreated", "asc")
+      where("tripId", "==", "")
+    );
+    const transshippedOutQuery = query(
+      ordersRef,
+      where("transferStation", "==", stationName),
+      where("deliveryStatus", "==", "At transfer station")
     );
     onSnapshot(unassignedTripQuery, (docs) => {
       const tempData = [];
@@ -210,8 +246,17 @@ const AssignTrip = () => {
         Object.assign(tempData, { [doc.data().id]: doc.data() });
         tempData.push(doc.data());
       });
-      console.log(tempData);
+
       setNoTripOrders(tempData);
+    });
+    onSnapshot(transshippedOutQuery, (docs) => {
+      const tempData = [];
+      docs.forEach((doc) => {
+        Object.assign(tempData, { [doc.data().id]: doc.data() });
+        tempData.push(doc.data());
+      });
+
+      setTransOutOrders(tempData);
     });
   }, []);
   return (
@@ -231,7 +276,7 @@ const AssignTrip = () => {
       <div className="mb-8 h-[500px] p-10">
         <TableGrid
           columns={columns}
-          rows={noTripOrders}
+          rows={[...transhippedOutOrders, ...noTripOrders]}
           setSelectedId={setSelectedIds}
           rowsPerPage={10}
           pageSize={10}

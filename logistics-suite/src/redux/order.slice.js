@@ -14,7 +14,7 @@ const initialState = {
   intraState: "No",
   intraCity: "No",
   deliveryType: "",
-  deliveryStatus: "",
+  deliveryStatus: "Order Received",
   trackingInfo: [
     {
       info: "Order Accepted at Origin Station",

@@ -1,6 +1,7 @@
 import { doc, setDoc } from "firebase/firestore";
 import React from "react";
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import CustomButton from "../components/button/button";
 import Header from "../components/Header";
 import Modal from "../components/Modal";
@@ -14,9 +15,12 @@ import { useThemeContext } from "../contexts/themeContext";
 import { db } from "../firebase/firebase";
 
 const InBound = () => {
-  const { inRows } = useTablesContext();
+  const { inRows, transshipInRows } = useTablesContext();
+  console.log(transshipInRows);
+  const rows = [...transshipInRows, ...inRows];
+
   const inRowsMap = {};
-  inRows.map((item) => Object.assign(inRowsMap, { [item.id]: item }));
+  rows.map((item) => Object.assign(inRowsMap, { [item.id]: item }));
   const [action, setAction] = useState("");
   const { openModal, closeModal } = useThemeContext();
   const { comparePin } = useAppConfigContext();
@@ -27,34 +31,21 @@ const InBound = () => {
   let date = new Date();
   const { stations } = useAppConfigContext();
 
-  const setTranshipment = () => {
-    let uneditableOrders = false;
-    selectedIds.forEach((id) => {
-      if (inRowsMap[id].deliveryStatus === "Dispatched") {
-        const trackingInfo = inRows[id].trackingInfo;
-        trackingInfo.push({
-          info: "Your order has been set to be delivered to a new location as requested",
-          time: date.toLocaleString(),
-        });
-        const orderRef = doc(db, "orders", id);
-        setDoc(orderRef, {
-          deliveryStatus: "To be transshipped to new destination",
-          trackingInfo,
-        });
-      } else {
-        uneditableOrders = true;
-      }
-    });
-    uneditableOrders &&
-      alert(
-        "Some of the Selected Orders have already been dispatched or dont have trips assigned yet"
-      );
-  };
   const setArrived = () => {
     let uneditableOrders = false;
     selectedIds.forEach((id) => {
-      if (inRowsMap[id].deliveryStatus === "Dispatched") {
-        const deliveryType = inRowsMap[id].deliveryType;
+      const {
+        deliveryStatus,
+        deliveryType,
+        transshipIn,
+        history,
+        trackingInfo,
+      } = inRowsMap[id];
+      if (deliveryStatus === "Dispatched") {
+        history.push({
+          info: `Order Recieved by ${currentUser.displayName}`,
+          time: date.toLocaleString(),
+        });
         const trackingMessage =
           deliveryType === "Station to Delivery man" ||
           deliveryType === "Pickup to Delivery man"
@@ -67,16 +58,33 @@ const InBound = () => {
                 " " +
                 stations[inRowsMap[id].destinationStation].address.state
               }. and awaiting pick up. kindly come with a valid means of identification`;
-        const trackingInfo = inRows[id].trackingInfo;
+
         trackingInfo.push({
-          info: trackingMessage,
+          info: transshipIn
+            ? "Order arrived at transfer station, will be on the way to destination station soon"
+            : trackingMessage,
           time: date.toLocaleString(),
         });
         const orderRef = doc(db, "orders", id);
-        setDoc(orderRef, {
-          deliveryStatus: "Arrived at Destination Station",
-          trackingInfo,
-        });
+        const arrivedStatus = "Arrived at Destination Station";
+        if (!transshipIn) {
+          setDoc(
+            orderRef,
+            { deliveryStatus: arrivedStatus, trackingInfo, history },
+            { merge: true }
+          );
+        } else
+          setDoc(
+            orderRef,
+            {
+              deliveryStatus: "At transfer station",
+              trackingInfo,
+              history,
+              transshipIn: false,
+              transshipOut: true,
+            },
+            { merge: true }
+          );
       } else {
         uneditableOrders = true;
       }
@@ -89,33 +97,35 @@ const InBound = () => {
   const setDelivered = () => {
     let uneditableOrders = false;
     selectedIds.forEach((id) => {
+      const {
+        deliveryStatus,
+
+        history,
+        trackingInfo,
+      } = inRowsMap[id];
+
+      history.push({
+        info: `Order set as delivered by ${currentUser.displayName}`,
+        time: date.toLocaleString(),
+      });
       if (
-        inRowsMap[id].deliveryStatus === "Arrived at Destination Station" ||
-        inRowsMap[id].deliveryStatus === "With last man delivery"
+        deliveryStatus === "Arrived at Destination Station" ||
+        deliveryStatus === "With last man delivery"
       ) {
-        const deliveryType = inRowsMap[id].deliveryType;
-        const trackingMessage =
-          deliveryType === "Station to Delivery man" ||
-          deliveryType === "Pickup to Delivery man"
-            ? "Your order has arrived the destination station and will be delivered to the set delivery address. please prepare your documents for identification"
-            : `Your order has arrived the destination station at ${
-                stations[inRowsMap[id].destinationStation].address
-                  .streetAddress +
-                " " +
-                stations[inRowsMap[id].destinationStation].address.lga +
-                " " +
-                stations[inRowsMap[id].destinationStation].address.state
-              }. and awaiting pick up. kindly come with a valid means of identification`;
-        const trackingInfo = inRows[id].trackingInfo;
         trackingInfo.push({
-          info: trackingMessage,
+          info: "Order delivered successfully",
           time: date.toLocaleString(),
         });
         const orderRef = doc(db, "orders", id);
-        setDoc(orderRef, {
-          deliveryStatus: "Delivered",
-          trackingInfo,
-        });
+        setDoc(
+          orderRef,
+          {
+            deliveryStatus: "Delivered",
+            trackingInfo,
+            history,
+          },
+          { merge: true }
+        );
       } else {
         uneditableOrders = true;
       }
@@ -147,32 +157,47 @@ const InBound = () => {
     {
       field: "id",
       headerName: "Tracking Id",
-      headerClassName: "bg-blue-200 ",
       width: 150,
+      renderCell: (param) => {
+        return <Link to={`/orders/${param.value}`}>{param.value}</Link>;
+      },
     },
     {
       field: "customerName",
       headerName: "Customer's Name",
-      headerClassName: "bg-blue-200 ",
+
       width: 150,
     },
     {
       field: "originStation",
       headerName: "Origin Station",
-      headerClassName: "bg-blue-200 ",
+
       width: 150,
     },
     {
+      field: "transferStation",
+      headerName: "Transfer Station",
+
+      width: 150,
+    },
+    {
+      field: "destinationStation",
+      headerName: "Destination Station",
+
+      width: 150,
+    },
+
+    {
       field: "receiverName",
       headerName: "Receiver's Name",
-      headerClassName: "bg-blue-200 ",
+
       width: 150,
       valueGetter: getReceiverName,
     },
     {
       field: "receiverAddress",
       headerName: "Receiver's Address",
-      headerClassName: "bg-blue-200 ",
+
       width: 150,
       valueGetter: getReceiverAddress,
     },
@@ -180,19 +205,19 @@ const InBound = () => {
     {
       field: "tripId",
       headerName: "Trip Id",
-      headerClassName: "bg-blue-200 ",
+
       width: 150,
     },
     {
       field: "deliveryStatus",
       headerName: "Delivery Status",
-      headerClassName: "bg-blue-200 ",
+
       width: 150,
     },
     {
       field: "paymentStatus",
       headerName: "Payment Status",
-      headerClassName: "bg-blue-200 ",
+
       width: 150,
     },
   ];
@@ -200,32 +225,32 @@ const InBound = () => {
     {
       field: "id",
       headerName: "Tracking Id",
-      headerClassName: "bg-blue-200 ",
+
       width: 150,
     },
     {
       field: "customerName",
       headerName: "Customer's Name",
-      headerClassName: "bg-blue-200 ",
+
       width: 150,
     },
     {
       field: "destinationStation",
       headerName: "Destination Station",
-      headerClassName: "bg-blue-200 ",
+
       width: 150,
     },
     {
       field: "receiverName",
       headerName: "Receiver's Name",
-      headerClassName: "bg-blue-200 ",
+
       width: 150,
       valueGetter: getReceiverName,
     },
     {
       field: "receiverAddress",
       headerName: "Receiver's Address",
-      headerClassName: "bg-blue-200 ",
+
       width: 150,
       valueGetter: getReceiverAddress,
     },
@@ -237,7 +262,7 @@ const InBound = () => {
       <div className="h-[500px]">
         <TableGrid
           columns={columns}
-          rows={inRows}
+          rows={rows}
           setSelectedId={setSelectedIds}
           checkboxSelection
         />
@@ -251,18 +276,9 @@ const InBound = () => {
             } else alert("No selections made");
           }}
         >
-          Set as Arrived
+          Receive Waybills
         </CustomButton>
-        {/* <CustomButton
-          handleClick={() => {
-            if (selectedIds.length) {
-              setAction("transship");
-              openModal("selectedOrders");
-            } else alert("No selections made");
-          }}
-        >
-          Mark for Transshipping
-        </CustomButton> */}
+
         <CustomButton
           handleClick={() => {
             if (selectedIds.length) {

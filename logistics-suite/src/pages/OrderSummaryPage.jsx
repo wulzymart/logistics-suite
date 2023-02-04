@@ -22,14 +22,61 @@ import PinModal from "../components/PinModal";
 import { Link, useNavigate } from "react-router-dom";
 import { useNewWaybillContext } from "../contexts/NewWaybillContext";
 import { useAppConfigContext } from "../contexts/AppConfig.context";
-import { createCustomerAndOrder, createOrder } from "../firebase/firebase";
+
+import {
+  collection,
+  doc,
+  getDocs,
+  query,
+  serverTimestamp,
+  setDoc,
+  where,
+} from "firebase/firestore";
+import { db } from "../firebase/firebase";
 
 const OrderSummaryPage = () => {
   const navigate = useNavigate();
   const { currentUser } = useUserContext();
-  const {comparePin}= useAppConfigContext()
+  const { comparePin } = useAppConfigContext();
   const { openModal, closeModal } = useThemeContext();
   const { newCustomer } = useNewWaybillContext();
+  const today = new Date();
+  const createOrder = (data) => {
+    const orderRef = doc(db, "orders", data.id);
+
+    setDoc(orderRef, {
+      ...data,
+      dateCreated: serverTimestamp(),
+      history: [
+        {
+          info: `Order created by ${currentUser.displayName}`,
+          time: today.toLocaleString(),
+        },
+      ],
+    });
+  };
+  const createCustomerAndOrder = async (customer, order) => {
+    const customersRef = collection(db, "customers");
+    const q = query(
+      customersRef,
+      where("phoneNumber", "==", customer.phoneNumber)
+    );
+    const querySnapshot = await getDocs(q);
+    const customerRef = doc(db, "customers", customer.id);
+
+    if (querySnapshot.empty) {
+      setDoc(customerRef, {
+        ...customer,
+        history: [
+          {
+            info: `Customer created by ${currentUser.displayName}`,
+            time: serverTimestamp(),
+          },
+        ],
+      });
+      createOrder(order);
+    } else alert("Customer with phone number exists");
+  };
 
   const dispatch = useDispatch();
   const order = useSelector((state) => state.order);

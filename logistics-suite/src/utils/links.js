@@ -76,8 +76,9 @@ export const links = [
         link: "/assign-trip",
       },
       {
-        name: "Transshipment",
+        name: "Trips",
         icon: <GiBattleship />,
+        link: "/trips",
       },
     ],
   },

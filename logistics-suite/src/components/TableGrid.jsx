@@ -12,7 +12,7 @@ export default function TableGrid({
 }) {
   const [pageSize, setPageSize] = useState(5);
   return (
-    <div className={`h-full w-full`}>
+    <div className="h-full w-full">
       <DataGrid
         sx={{
           "&.MuiDataGrid-root--densityCompact .MuiDataGrid-cell": {
@@ -27,7 +27,6 @@ export default function TableGrid({
         }}
         rows={rows}
         getRowClassName={(row) => {
-          console.log(row.row);
           return "bg-blue-300";
         }}
         headerHeight={50}

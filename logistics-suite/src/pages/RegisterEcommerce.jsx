@@ -107,7 +107,6 @@ const RegisterEcommerce = () => {
               value={customer.address.state}
               handleChange={(e) => {
                 dispatch(setCustomerState(e.target.value));
-                console.log(states[e.target.value].lgas);
               }}
             >
               Select State

@@ -562,6 +562,7 @@ const Summary = () => {
       processedBy: "",
     },
   ];
+  const date = new Date();
   mockOrders.forEach(async (order) => {
     const orderRef = doc(db, "orders", order.id);
     const snapshot = await getDoc(orderRef);
@@ -569,6 +570,13 @@ const Summary = () => {
       setDoc(orderRef, {
         ...order,
         tripId: "",
+        deliveryStatus: "Order Received",
+        trackingInfo: [
+          {
+            info: "Order Accepted at Origin Station",
+            time: date.toLocaleString(),
+          },
+        ],
         dateCreated: serverTimestamp(),
       });
     }

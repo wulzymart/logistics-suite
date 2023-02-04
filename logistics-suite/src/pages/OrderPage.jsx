@@ -3,16 +3,18 @@ import { doc, getDoc } from "firebase/firestore";
 import React from "react";
 import { useState } from "react";
 import { useEffect } from "react";
+import { useParams } from "react-router-dom";
 import Header from "../components/Header";
 import { db } from "../firebase/firebase";
 
 const OrderPage = () => {
+  const { id } = useParams();
   const [order, setOrder] = useState();
   const [customer, setCustomer] = useState();
   const [Receiver, setReceiver] = useState();
   const [item, setItem] = useState();
   useEffect(() => {
-    const orderRef = doc(db, "orders", "BB9T0IV3");
+    const orderRef = doc(db, "orders", id);
     const getOrder = async () => {
       const snapshot = await getDoc(orderRef);
       if (snapshot.exists()) {

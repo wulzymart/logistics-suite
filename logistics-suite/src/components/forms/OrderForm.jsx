@@ -45,7 +45,7 @@ import { useUserContext } from "../../contexts/CurrentUser.Context";
 
 const OrderForm = () => {
   const { currentUser } = useUserContext();
-  console.log(currentUser);
+ 
   const dispatch = useDispatch();
   const customer = useSelector((state) => state.customer);
   const order = useSelector((state) => state.order);
@@ -56,7 +56,6 @@ const OrderForm = () => {
 
     stationsList,
   } = useAppConfigContext();
-  console.log(states);
   const shipmentCartegoryOptions = Object.keys(appBrain.shipmentCartegory).map(
     (key) => key
   );

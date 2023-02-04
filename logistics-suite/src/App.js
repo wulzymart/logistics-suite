@@ -29,6 +29,8 @@ import CustomerPage from "./pages/CustomerPage";
 import Inbound from "./pages/Inbound";
 import Outbound from "./pages/Outbound";
 import { TableProvider } from "./contexts/TablesContext";
+import Trips from "./pages/Trips";
+import Trip from "./pages/Trip";
 
 function App() {
   const { currentMode } = useThemeContext();
@@ -71,8 +73,10 @@ function App() {
                     <Route path="inbound" element={<Inbound />} />
                     <Route path="outbound" element={<Outbound />} />
                     <Route path="assign-trip" element={<AssignTrip />} />
-                    <Route path="order" element={<OrderPage />} />
+                    <Route path="orders/:id" element={<OrderPage />} />
                     <Route path="customer" element={<CustomerPage />} />
+                    <Route path="trips" element={<Trips />} />
+                    <Route path="/trips/:trip" element={<Trip />} />
                     <Route path="admin">
                       <Route path="staff-registration" element={<NewStaff />} />
                       <Route path="stations" element={<ManageStations />} />
