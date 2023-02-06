@@ -2,20 +2,16 @@
 import axios from "axios";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 
-import React, {
-  createContext,
-  useContext,
-  useEffect,
-  useState,
-} from "react";
+import React, { createContext, useContext, useEffect, useState } from "react";
 import { app } from "../firebase/firebase";
 
 const UserContext = createContext();
 
 export const UserContextProvider = ({ children }) => {
   const [currentUser, setCurrentUser] = useState("loading");
-  const [stationName, setStationName] = useState(null);
+  const [stationName, setStationName] = useState("");
   const [stationId, setStationId] = useState("");
+  const [staffState, setStaffState] = useState("");
   const auth = getAuth(app);
   useEffect(() => {
     return async () => {
@@ -28,11 +24,13 @@ export const UserContextProvider = ({ children }) => {
             setCurrentUser(loggedInUser);
             setStationName(loggedInUser.station);
             setStationId(loggedInUser.stationId);
+            setStaffState(loggedInUser.address.state);
           });
         } else {
           setCurrentUser(null);
           setStationName("");
           setStationId("");
+          setStaffState("");
         }
       });
     };
@@ -41,6 +39,7 @@ export const UserContextProvider = ({ children }) => {
   return (
     <UserContext.Provider
       value={{
+        staffState,
         currentUser,
         stationName,
         setStationName,

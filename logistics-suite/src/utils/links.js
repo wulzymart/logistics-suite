@@ -99,12 +99,14 @@ export const links = [
         icon: <GiExpense />,
       },
       {
-        name: "station Staff",
+        name: "Staff",
         icon: <FaUsers />,
+        link: "/admin/staff",
       },
       {
         name: "Customers",
         icon: <HiUserGroup />,
+        link: "/customers",
       },
       {
         name: "E-Commerce customers",
@@ -116,7 +118,7 @@ export const links = [
     title: "Director",
     links: [
       {
-        name: "Create New Staff",
+        name: "Add New Staff",
         icon: <FaUserPlus />,
         link: "/admin/staff-registration",
       },
