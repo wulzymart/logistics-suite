@@ -7,6 +7,7 @@ import TextArea from "../components/textarea/textarea";
 import { useAppConfigContext } from "../contexts/AppConfig.context";
 import { useUserContext } from "../contexts/CurrentUser.Context";
 import {
+  setCustomerId,
   setCustomerFirstName,
   setCustomerLastName,
   setCustomerPhone,
@@ -29,17 +30,22 @@ import {
   doc,
   getDocs,
   query,
+  serverTimestamp,
   setDoc,
   where,
 } from "firebase/firestore";
+import { idGenerator } from "../AppBrain";
 
 const RegisterEcommerce = () => {
   const dispatch = useDispatch();
+  const [saved, setSaved] = useState(false);
   const customer = useSelector((state) => state.customer);
   const { states, statesList, comparePin } = useAppConfigContext();
   const { currentUser } = useUserContext();
   const { openModal, closeModal } = useThemeContext();
   const [Pin, setPin] = useState();
+  const [paymentMode, setPaymentMode] = useState("");
+  const [receiptInfo, setReceiptInfo] = useState("");
   const addEcommerce = async () => {
     if (comparePin(Pin, currentUser.pin)) {
       const customersRef = collection(db, "customers");
@@ -54,6 +60,20 @@ const RegisterEcommerce = () => {
         closeModal("pin-modal");
         closeModal("newEcommerce-modal");
         dispatch(resetCustomer());
+        const paymentId = idGenerator(10);
+        setDoc(doc(db, "income", paymentId), {
+          id: paymentId,
+          customerId: customer.id,
+          customerName: customer.firstName + " " + customer.lastName,
+          businessName: customer.businessName,
+          amount: customer.walletBalance,
+          purpose: "Wallet Top-up",
+          paymentMode,
+          receiptInfo,
+          dateMade: serverTimestamp(),
+          processedBy: currentUser.displayName,
+          station: currentUser.station,
+        });
       } else alert("Customer with phone number exists");
     } else alert("incorrect Pin");
   };
@@ -173,7 +193,12 @@ const RegisterEcommerce = () => {
           />
         </div>
       </div>
-      <CustomButton handleClick={() => openModal("newEcommerce-modal")}>
+      <CustomButton
+        handleClick={() => {
+          dispatch(setCustomerId(idGenerator(12)));
+          openModal("newEcommerce-modal");
+        }}
+      >
         Acknowledge Payment and Save
       </CustomButton>
       <Modal id="newEcommerce-modal" title="Ecommerce Customer Summary">
@@ -221,9 +246,22 @@ const RegisterEcommerce = () => {
           <span className=" font-medium">Opening Balance:</span>
           <span>{customer.walletBalance} NGN</span>
         </div>
+        <div className="flex gap-2 items-center mb-4">
+          <p>Payment mode:</p>
+          <Select
+            options={["Cash", "Card", "Transfer"]}
+            value={paymentMode}
+            handleChange={(e) => setPaymentMode(e.target.value)}
+            children="Select Payment Mode"
+          />
+        </div>
         <div className=" flex flex-col md:flex-row gap-2 md:items-center mb-4">
           <span className=" font-medium">Receipt Information:</span>
-          <TextArea placeholder="Enter all receipt details here, including type of payment" />
+          <TextArea
+            placeholder="Enter receipt details here"
+            value={receiptInfo}
+            handleChange={(e) => setReceiptInfo(e.target.value)}
+          />
         </div>
         <CustomButton
           handleClick={() => {

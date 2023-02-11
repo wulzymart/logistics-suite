@@ -3,6 +3,7 @@ import axios from "axios";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 
 import React, { createContext, useContext, useEffect, useState } from "react";
+import { rootUrl } from "../AppBrain";
 import { app } from "../firebase/firebase";
 
 const UserContext = createContext();
@@ -18,14 +19,18 @@ export const UserContextProvider = ({ children }) => {
       return onAuthStateChanged(auth, async (user) => {
         if (user) {
           const uid = user.uid;
-          await axios.get(`/users`, { params: { uid } }).then((data) => {
-            const loggedInUser = data.data;
+          await axios
+            .get(`https://kind-waders-hare.cyclic.app/users`, {
+              params: { uid },
+            })
+            .then((data) => {
+              const loggedInUser = data.data;
 
-            setCurrentUser(loggedInUser);
-            setStationName(loggedInUser.station);
-            setStationId(loggedInUser.stationId);
-            setStaffState(loggedInUser.address.state);
-          });
+              setCurrentUser(loggedInUser);
+              setStationName(loggedInUser.station);
+              setStationId(loggedInUser.stationId);
+              setStaffState(loggedInUser.address.state);
+            });
         } else {
           setCurrentUser(null);
           setStationName("");

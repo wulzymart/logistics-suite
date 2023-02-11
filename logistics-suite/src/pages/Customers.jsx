@@ -9,7 +9,7 @@ import {
   startAfter,
   where,
 } from "firebase/firestore";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { HiSearch } from "react-icons/hi";
 import PhoneInput from "react-phone-input-2";
 import { Link } from "react-router-dom";
@@ -121,9 +121,12 @@ const Customers = () => {
         tempData.push(doc.data());
       });
       setCustomers(tempData);
-    } else setCustomers([]);
+    } else type === queryCustomers && setCustomers([]);
+    type === nextCustomers && alert("No more customers in this list");
   };
-  getQuery(queryCustomers);
+  useEffect(() => {
+    getQuery(queryCustomers);
+  }, [state]);
 
   return staffState ? (
     <div>

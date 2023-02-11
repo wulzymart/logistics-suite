@@ -16,7 +16,6 @@ import { db } from "../firebase/firebase";
 
 const InBound = () => {
   const { inRows, transshipInRows } = useTablesContext();
-  console.log(transshipInRows);
   const rows = [...transshipInRows, ...inRows];
 
   const inRowsMap = {};
@@ -153,6 +152,13 @@ const InBound = () => {
       params.row.receiver.address.lga || ""
     } ${params.row.receiver.address.state || ""}`;
   }
+  function getPaymentStatus(params) {
+    const paid = params.row.paid;
+
+    if (paid) {
+      return "Paid";
+    } else return "Unpaid";
+  }
   const columns = [
     {
       field: "id",
@@ -215,10 +221,19 @@ const InBound = () => {
       width: 150,
     },
     {
-      field: "paymentStatus",
+      field: "paid",
       headerName: "Payment Status",
-
       width: 150,
+      valueGetter: getPaymentStatus,
+      renderCell: (param) => (
+        <p
+          className={`${
+            param.value === "Unpaid" ? "text-red-500" : "text-green-800"
+          }`}
+        >
+          {param.value}
+        </p>
+      ),
     },
   ];
   const modalColumns = [
@@ -259,8 +274,9 @@ const InBound = () => {
   return (
     <div>
       <Header title="View Inbound Orders" />
-      <div className="h-[500px]">
+      <div className="">
         <TableGrid
+          autoHeight
           columns={columns}
           rows={rows}
           setSelectedId={setSelectedIds}
@@ -297,8 +313,12 @@ const InBound = () => {
             proceeding. Some changes may not be reversible
           </p>
 
-          <div className="h-[250px] mt-6">
-            <TableGrid columns={modalColumns} rows={selectedOrders} />
+          <div className=" mt-6">
+            <TableGrid
+              columns={modalColumns}
+              rows={selectedOrders}
+              autoHeight
+            />
           </div>
         </div>
         <CustomButton handleClick={() => openModal("pin-modal")}>

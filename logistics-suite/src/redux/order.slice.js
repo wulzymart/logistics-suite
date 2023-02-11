@@ -60,8 +60,8 @@ const orderSlice = createSlice({
   initialState,
   reducers: {
     resetOrder: () => initialState,
-    setOrderId(state) {
-      state.id = idGenerator(8);
+    setOrderId(state, action) {
+      state.id = action.payload;
     },
     setIntraCity(state, action) {
       state.intraCity = action.payload;

@@ -1,39 +1,41 @@
 import { createSlice } from "@reduxjs/toolkit";
 import { idGenerator } from "../AppBrain";
+const initialState = {
+  id: idGenerator(10),
+  firstName: "",
+  lastName: "",
+  phoneNumber: "",
+  gender: "",
+  email: "",
+  password: "",
+  qualification: "",
+  role: "",
+  grossSalary: 0,
+  tax: 0,
+  pension: 0,
+  netSalary: 0,
+  rank: "",
+  monthlyAllowance: "",
+  station: "",
+  stationId: "",
+  address: {
+    state: "",
+    lga: "",
+    streetAddress: "",
+  },
+  adminRight: "",
+  dateofBirth: "",
+  nextOfKin: { name: "", phoneNumber: "" },
+  guarantor1: { name: "", phoneNumber: "" },
+  guarantor2: { name: "", phoneNumber: "" },
+
+  expenses: [], // new document
+};
 const staffSlice = createSlice({
   name: "staff",
-  initialState: {
-    id: idGenerator(10),
-    firstName: "",
-    lastName: "",
-    phoneNumber: "",
-    gender: "",
-    email: "",
-    password: "",
-    qualification: "",
-    role: "",
-    grossSalary: 0,
-    tax: 0,
-    pension: 0,
-    netSalary: 0,
-    rank: "",
-    monthlyAllowance: "",
-    station: "",
-    stationId: "",
-    address: {
-      state: "",
-      lga: "",
-      streetAddress: "",
-    },
-    adminRight: "",
-    dateofBirth: "",
-    nextOfKin: { name: "", phoneNumber: "" },
-    guarantor1: { name: "", phoneNumber: "" },
-    guarantor2: { name: "", phoneNumber: "" },
-
-    expenses: [], // new document
-  },
+  initialState,
   reducers: {
+    resetStaff: () => initialState,
     setStaffEmail(state, action) {
       state.email = action.payload;
     },
@@ -155,5 +157,6 @@ export const {
   setNOKPhone,
   setStaffStationId,
   setStaffGender,
+  resetStaff,
 } = staffSlice.actions;
 export default staffSlice.reducer;

@@ -28,25 +28,28 @@ import {
   setNOKName,
   setNOKPhone,
   setStaffStationId,
+  resetStaff,
 } from "../../redux/staff.slice";
 import PhoneInput from "react-phone-input-2";
 import "react-phone-input-2/lib/style.css";
 import Select from "../select-input/select";
-import { appBrain } from "../../AppBrain";
+import { appBrain, rootUrl } from "../../AppBrain";
 import ReactDatePicker from "react-datepicker";
 
 import CustomButton from "../button/button";
 import axios from "axios";
 import { useAppConfigContext } from "../../contexts/AppConfig.context";
+import PinModal from "../PinModal";
+import { useThemeContext } from "../../contexts/themeContext";
+import { useUserContext } from "../../contexts/CurrentUser.Context";
 
 const StaffReg = () => {
-  const {
-    states,
-    statesList,
-    stations,
-
-    stationsList,
-  } = useAppConfigContext();
+  const { states, statesList, stations, comparePin, stationsList } =
+    useAppConfigContext();
+  const { currentUser } = useUserContext();
+  const { openModal } = useThemeContext();
+  const [pin, setPin] = useState("");
+  console.log(states);
 
   const [passwordMatch, setPasswordMatch] = useState(true);
   const dispatch = useDispatch();
@@ -253,7 +256,9 @@ const StaffReg = () => {
             <Select
               name={"staffLga"}
               value={staff.address.lga}
-              options={staff.address.state ? states[staff.address.state] : []}
+              options={
+                staff.address.state ? states[staff.address.state].lgas : []
+              }
               handleChange={(e) => dispatch(setStaffLga(e.target.value))}
               children={"Select LGA"}
             />
@@ -424,13 +429,28 @@ const StaffReg = () => {
             ? alert(
                 "Proper Password or Email not inputed, Please Check and try again"
               )
-            : axios.post("/api", staff).then((response) => {
-                alert(response.data);
-              })
+            : openModal("pin-modal")
         }
       >
         Register
       </CustomButton>
+      <PinModal
+        pin={pin}
+        handleChange={(e) => setPin(e.target.value)}
+        handleSubmit={() => {
+          comparePin(pin, currentUser.pin)
+            ? axios
+                .post(`https://kind-waders-hare.cyclic.app/api`, staff)
+                .then((response) => {
+                  if (response.data === true) {
+                    alert(" User Created");
+                    dispatch(resetStaff());
+                  } else alert("error, contact app admin", response.data);
+                })
+            : alert("Incorrect Pin");
+          setPin("");
+        }}
+      />
     </div>
   );
 };

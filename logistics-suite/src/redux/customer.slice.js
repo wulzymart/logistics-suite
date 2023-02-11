@@ -1,15 +1,15 @@
 import { createSlice } from "@reduxjs/toolkit";
-import { serverTimestamp } from "firebase/firestore";
-import { idGenerator } from "../AppBrain";
 
 const initialState = {
-  id: idGenerator(12),
+  id: "",
   customerType: "individual",
   firstName: "",
   lastName: "",
   businessName: "",
   sex: "",
-  dateOfBirth: new Date().toUTCString(),
+  dateOfBirth: "",
+  birthMonth: "",
+  birthDate: "",
   phoneNumber: "",
   email: "",
   address: {
@@ -17,14 +17,15 @@ const initialState = {
     lga: "",
     streetAddress: "",
   },
-
-  dateRegistered: serverTimestamp(),
 };
 export const customerSlice = createSlice({
   name: "customer",
   initialState,
   reducers: {
     resetCustomer: () => initialState,
+    setCustomerId(state, action) {
+      state.id = action.payload;
+    },
 
     setCustomerType(state, action) {
       state.customerType = action.payload;
@@ -48,7 +49,11 @@ export const customerSlice = createSlice({
       state.sex = action.payload;
     },
     setCustomerDOB(state, action) {
-      state.dateOfBirth = action.payload;
+      state.dateOfBirth = new Date(action.payload).toISOString();
+      state.birthMonth = new Intl.DateTimeFormat("en-US", {
+        month: "long",
+      }).format(new Date(action.payload));
+      state.birthDate = new Date(action.payload).getDate();
     },
     setCustomerState(state, action) {
       state.address.state = action.payload;
@@ -80,5 +85,6 @@ export const {
   setCustomerType,
   setCustomerBusinessName,
   setWalletBalance,
+  setCustomerId,
 } = customerSlice.actions;
 export default customerSlice.reducer;

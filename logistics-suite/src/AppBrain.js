@@ -10,7 +10,10 @@ export function idGenerator(n) {
   }
   return id;
 }
-
+export const rootUrl =
+  process.env.NODE_ENV === "production"
+    ? "https://kind-waders-hare.cyclic.app"
+    : "";
 export const themeColors = [
   {
     name: "blue-theme",
@@ -84,7 +87,7 @@ export const appBrain = {
     "Delivery Man",
   ],
   cashOnDeliveryOptions: ["Yes", "No"],
-  paymentTypes: ["Cash", "Card", "Transfer", "Wallet"],
+  paymentTypes: ["Cash", "Card", "Transfer"],
 
   vat: 0.075,
   insurance: 0.005,

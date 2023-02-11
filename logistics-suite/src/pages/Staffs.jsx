@@ -9,7 +9,7 @@ import {
   startAfter,
   where,
 } from "firebase/firestore";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { HiSearch } from "react-icons/hi";
 import { Link } from "react-router-dom";
 import Header from "../components/Header";
@@ -48,20 +48,20 @@ const Staffs = () => {
 
   const queryStaffs = query(
     staffsRef,
-    where("station", "==", stationName),
+    where("station", "==", station),
     orderBy("createdAt", "asc"),
     limit(pageSize)
   );
   const nextStaffs = query(
     staffsRef,
-    where("station", "==", stationName),
+    where("station", "==", station),
     orderBy("createdAt", "asc"),
     startAfter(lastVisible),
     limit(pageSize)
   );
   const previousStaffs = query(
     staffsRef,
-    where("station", "==", stationName),
+    where("station", "==", station),
     orderBy("createdAt", "asc"),
     endBefore(firstVisible),
     limitToLast(pageSize)
@@ -112,6 +112,7 @@ const Staffs = () => {
   const getQuery = async (type) => {
     const querySnapshot = await getDocs(type);
     if (!querySnapshot.empty) {
+      console.log(querySnapshot);
       setLastVisible(querySnapshot.docs[querySnapshot.docs.length - 1]);
       setFirstVisible(querySnapshot.docs[0]);
       const tempData = [];
@@ -119,9 +120,14 @@ const Staffs = () => {
         tempData.push(doc.data());
       });
       setStaffs(tempData);
-    } else setStaffs([]);
+    } else {
+      type === queryStaffs && setStaffs([]);
+      type === nextStaffs && alert("No more staff in this list");
+    }
   };
-  getQuery(queryStaffs);
+  useEffect(() => {
+    getQuery(queryStaffs);
+  }, [station]);
 
   return stationName ? (
     <div>
@@ -130,7 +136,7 @@ const Staffs = () => {
         <div className="w-1/4 flex relative">
           <Select
             options={stationsList ? stationsList : [""]}
-            children="Select State"
+            children="Select Station"
             value={station}
             handleChange={(e) => setStation(e.target.value)}
           />

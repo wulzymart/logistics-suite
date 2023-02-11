@@ -80,52 +80,47 @@ export const links = [
         icon: <GiBattleship />,
         link: "/trips",
       },
-    ],
-  },
-  {
-    title: "Admin",
-    links: [
-      {
-        name: "Station Summary",
-        icon: <HiOfficeBuilding />,
-      },
-      {
-        name: "Account Summary",
-        icon: <MdAccountBalance />,
-      },
-
-      {
-        name: "Expense Summary",
-        icon: <GiExpense />,
-      },
-      {
-        name: "Staff",
-        icon: <FaUsers />,
-        link: "/admin/staff",
-      },
       {
         name: "Customers",
         icon: <HiUserGroup />,
         link: "/customers",
       },
-      {
-        name: "E-Commerce customers",
-        icon: <HiUserGroup />,
-      },
+    ],
+  },
+  {
+    title: "Admin",
+    links: [
+      // {
+      //   name: "Station Summary",
+      //   icon: <HiOfficeBuilding />,
+      // },
+      // {
+      //   name: "Account Summary",
+      //   icon: <MdAccountBalance />,
+      // },
+      // {
+      //   name: "Expense Summary",
+      //   icon: <GiExpense />,
+      // },
     ],
   },
   {
     title: "Director",
     links: [
       {
+        name: "Register Ecommerce",
+        icon: <MdAddBusiness />,
+        link: "/admin/new-ecommerce-customer",
+      },
+      {
         name: "Add New Staff",
         icon: <FaUserPlus />,
         link: "/admin/staff-registration",
       },
       {
-        name: "Register Ecommerce",
-        icon: <MdAddBusiness />,
-        link: "/admin/new-ecommerce-customer",
+        name: "Staff",
+        icon: <FaUsers />,
+        link: "/admin/staff",
       },
 
       {

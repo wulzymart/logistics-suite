@@ -5,6 +5,7 @@ import axios from "axios";
 import bcrypt from "bcryptjs";
 
 import React, { createContext, useContext, useEffect, useState } from "react";
+import { rootUrl } from "../AppBrain";
 
 import { useUserContext } from "./CurrentUser.Context";
 
@@ -38,18 +39,18 @@ export const AppConfigContextProvider = ({ children }) => {
   };
 
   useEffect(() => {
-    axios.get("/states").then((data) => {
+    axios.get(`https://kind-waders-hare.cyclic.app/states`).then((data) => {
       setStates(data.data);
 
       setStatesList(Object.keys(data.data).map((key) => key));
     });
-    axios.get("/routes").then((data) => {
+    axios.get(`https://kind-waders-hare.cyclic.app/routes`).then((data) => {
       setRoutes(data.data);
       const list = Object.keys(data.data).map((key) => data.data[key].name);
       setRoutesList(list);
     });
 
-    axios.get("/stations").then((data) => {
+    axios.get(`https://kind-waders-hare.cyclic.app/stations`).then((data) => {
       const stationsByName = {};
       // eslint-disable-next-line array-callback-return
       Object.keys(data.data).map((key) => {
@@ -62,18 +63,26 @@ export const AppConfigContextProvider = ({ children }) => {
       setStationsList(list);
     });
     axios
-      .get(`/users`, { params: { role: "Vehicle Attendant" } })
+      .get(`https://kind-waders-hare.cyclic.app/users`, {
+        params: { role: "Vehicle Attendant" },
+      })
       .then((data) => {
         setAttendants(data.data);
         setAttendantsList(Object.keys(data.data));
       });
 
-    axios.get(`/users`, { params: { role: "Driver" } }).then((data) => {
-      setDrivers(data.data);
-      setDriversList(Object.keys(data.data));
-    });
     axios
-      .get("/vehicles", { params: { type: "interState" } })
+      .get(`https://kind-waders-hare.cyclic.app/users`, {
+        params: { role: "Driver" },
+      })
+      .then((data) => {
+        setDrivers(data.data);
+        setDriversList(Object.keys(data.data));
+      });
+    axios
+      .get(`https://kind-waders-hare.cyclic.app/vehicles`, {
+        params: { type: "interState" },
+      })
       .then(({ data }) => {
         setinterStateVehicles(data);
         setIntVehList(Object.keys(data));
@@ -82,7 +91,7 @@ export const AppConfigContextProvider = ({ children }) => {
   useEffect(() => {
     if (stationName) {
       axios
-        .get("/vehicles", {
+        .get(`https://kind-waders-hare.cyclic.app/vehicles`, {
           params: { type: "station", station: stationName },
         })
         .then(({ data }) => {

@@ -4,7 +4,7 @@ import CustomButton from "../components/button/button";
 import OrderSummary from "../components/orderSummary";
 import Modal from "../components/Modal";
 import Select from "../components/select-input/select";
-import { appBrain } from "../AppBrain";
+import { appBrain, idGenerator } from "../AppBrain";
 import {
   setPayOnDelivery,
   setPaymentMode,
@@ -12,6 +12,7 @@ import {
   setPaymentStatus,
   resetOrder,
 } from "../redux/order.slice";
+import { setWalletBalance } from "../redux/customer.slice";
 import { resetCustomer } from "../redux/customer.slice";
 import { useSelector, useDispatch } from "react-redux";
 import Textarea from "../components/textarea/textarea";
@@ -39,13 +40,28 @@ const OrderSummaryPage = () => {
   const { currentUser } = useUserContext();
   const { comparePin } = useAppConfigContext();
   const { openModal, closeModal } = useThemeContext();
-  const { newCustomer } = useNewWaybillContext();
+  const { newCustomer, setNewCustomer } = useNewWaybillContext();
+  const customer = useSelector((state) => state.customer);
+  const order = useSelector((state) => state.order);
+  const [paymentOnDelivery, setPaymentOnDelivery] = useState(
+    order.payOnDelivery
+  );
+  const [paymentMode, setPaymentMd] = useState(order.paymentMode);
+  const [paymentSet, setPaymentSet] = useState(false);
+  const [saved, setSaved] = useState(false);
+  const [receipt, setReceipt] = useState(order.receiptInfo);
+  const [walletPay, setWalletPay] = useState(false);
+  const paymentId = idGenerator(10);
+
+  const [Pin, setPin] = useState("");
+  const dispatch = useDispatch();
+
   const today = new Date();
-  const createOrder = (data) => {
-    const orderRef = doc(db, "orders", data.id);
+  const createOrder = () => {
+    const orderRef = doc(db, "orders", order.id);
 
     setDoc(orderRef, {
-      ...data,
+      ...order,
       dateCreated: serverTimestamp(),
       history: [
         {
@@ -54,8 +70,44 @@ const OrderSummaryPage = () => {
         },
       ],
     });
+    if (order.payOnDelivery === "No") {
+      if (order.paymentMode === "Wallet") {
+        setDoc(doc(db, "walletPayout", paymentId), {
+          id: paymentId,
+          customerId: customer.id,
+          customerName: customer.firstName + " " + customer.lastName,
+          businessName: customer.businessName,
+          amount: order.total,
+          purpose: "Order Payment",
+          orderId: order.id,
+          receiptInfo: receipt,
+          dateMade: serverTimestamp(),
+          processedBy: currentUser.displayName,
+          station: currentUser.station,
+        });
+
+        createOrder(order);
+      } else {
+        setDoc(doc(db, "income", paymentId), {
+          id: paymentId,
+          customerId: customer.id,
+          customerName: customer.firstName + " " + customer.lastName,
+          businessName: customer.businessName,
+          amount: order.total,
+          purpose: "Order Payment",
+          orderId: order.id,
+          paymentMode,
+          receiptInfo: receipt,
+          dateMade: serverTimestamp(),
+          processedBy: currentUser.displayName,
+          station: currentUser.station,
+        });
+      }
+    }
+
+    setSaved(true);
   };
-  const createCustomerAndOrder = async (customer, order) => {
+  const createCustomerAndOrder = async () => {
     const customersRef = collection(db, "customers");
     const q = query(
       customersRef,
@@ -67,75 +119,57 @@ const OrderSummaryPage = () => {
     if (querySnapshot.empty) {
       setDoc(customerRef, {
         ...customer,
+        dateCreated: serverTimestamp(),
         history: [
           {
             info: `Customer created by ${currentUser.displayName}`,
-            time: serverTimestamp(),
+            time: today.toLocaleString(),
           },
         ],
       });
-      createOrder(order);
-    } else alert("Customer with phone number exists");
+      createOrder();
+    } else {
+      alert("Customer with phone number exists");
+      setSaved(false);
+      return;
+    }
   };
 
-  const dispatch = useDispatch();
-  const order = useSelector((state) => state.order);
-  const customer = useSelector((state) => state.customer);
+  const setPaymentDetails = () => {
+    dispatch(setPayOnDelivery(paymentOnDelivery));
+    if (paymentOnDelivery === "No") dispatch(setPaymentMode(paymentMode));
+    if (paymentMode) {
+      dispatch(setPaymentStatus(true));
+      if (paymentMode !== "Wallet") {
+        dispatch(setReceiptInfo(receipt));
+      } else {
+        dispatch(setWalletBalance(customer.walletBalance - order.total));
+      }
+    }
+    closeModal("payment-summary");
+    closeModal("payment-modal");
+    setPaymentSet(true);
+  };
+
+  const saveTransaction = () => {
+    newCustomer === "Yes"
+      ? createCustomerAndOrder(customer, order)
+      : createOrder(order);
+  };
   const handleSubmit = async () => {
     if (comparePin(Pin, currentUser.pin)) {
-      if (order.payOnDelivery === "No") {
-        if (order.paymentMode === "Wallet") {
-          // remove money from customer wallet and save
-          console.log("money removed form wallet");
-          console.log("order saved to database");
-          dispatch(setPaymentStatus(true));
-          closeModal("pin-modal");
-          closeModal("payment-modal");
-        } else {
-          // Save order
-          newCustomer === "Yes"
-            ? createCustomerAndOrder(customer, order)
-            : createOrder(order);
-          dispatch(setPaymentStatus(true));
-          closeModal("pin-modal");
-          closeModal("payment-modal");
-        }
-      } else {
-        // Save order to database
-
-        closeModal("pin-modal");
-        closeModal("payment-modal");
-      }
+      saveTransaction();
+      setPin("");
+      closeModal("pin-modal");
     } else alert("Error: Wrong Pin");
   };
 
-  const [Pin, setPin] = useState("");
   return (
-    <div className="relative p-20">
+    <div className="p-20">
       <OrderSummary />
-      <div className="mt-8"></div>
-      {order.payOnDelivery === "Yes" ? (
-        <div className="w-full flex flex-col md:flex-row justify-center gap-8 ">
-          <Link to="/print-waybill" target="blank">
-            <CustomButton>Print Order</CustomButton>
-          </Link>
-          <CustomButton
-            handleClick={() => {
-              dispatch(resetOrder());
-              dispatch(resetCustomer());
-              navigate("/");
-            }}
-          >
-            Finished
-          </CustomButton>
-        </div>
-      ) : order.payOnDelivery === "No" ? (
-        !order.paid ? (
-          <CustomButton handleClick={() => openModal("payment-modal")}>
-            Enter Payment Information
-          </CustomButton>
-        ) : (
-          <div className="w-full flex flex-col md:flex-row justify-center gap-8">
+      {paymentSet ? (
+        saved ? (
+          <div className="w-full flex flex-col md:flex-row justify-center gap-8 ">
             <Link to="/print-waybill" target="blank">
               <CustomButton>Print Order</CustomButton>
             </Link>
@@ -143,90 +177,129 @@ const OrderSummaryPage = () => {
               handleClick={() => {
                 dispatch(resetOrder());
                 dispatch(resetCustomer());
+                setNewCustomer("");
                 navigate("/");
               }}
             >
-              Finished
+              Finish
             </CustomButton>
           </div>
+        ) : (
+          <CustomButton handleClick={() => openModal("pin-modal")}>
+            Save Order
+          </CustomButton>
         )
       ) : (
-        <CustomButton handleClick={() => openModal("payment-modal")}>
+        <CustomButton
+          handleClick={() => {
+            console.log(order);
+            openModal("payment-modal");
+          }}
+        >
           Enter Payment Information
         </CustomButton>
       )}
 
-      <Modal id="payment-modal" title="Payment">
+      <Modal id="payment-modal" title="Enter Payment Details">
         <div className=" flex flex-col md:flex-row gap-8 md:items-center">
           <span className=" font-medium">Pay on Delivery</span>
           <Select
             options={appBrain.cashOnDeliveryOptions}
-            name={"payOnDelivery"}
-            value={order.payOnDelivery}
+            value={paymentOnDelivery}
             children={"Select one"}
             handleChange={(e) => {
-              dispatch(setPayOnDelivery(e.target.value));
-              e.target.value === "Yes" && dispatch(setPaymentMode(""));
+              setPaymentOnDelivery(e.target.value);
+              (!e.target.value || e.target.value === "Yes") && setPaymentMd("");
+              (!e.target.value || e.target.value === "Yes") &&
+                setWalletPay(false);
             }}
           />
         </div>
-        <div className="w-full mt-8 flex flex-col md:flex-row flex-wrap gap-10">
-          {order.payOnDelivery === "No" && (
+        <div className="w-full mt-8 mb-8 flex flex-col md:flex-row flex-wrap gap-10">
+          {paymentOnDelivery === "No" && (
             <div className=" flex flex-col md:flex-row gap-8 w-full md:items-center">
-              <span className=" font-medium">Select payment type</span>
-              <Select
-                options={appBrain.paymentTypes}
-                name={"paymentMode"}
-                value={order.paymentMode}
-                children={"Select one"}
-                handleChange={(e) => dispatch(setPaymentMode(e.target.value))}
-              />
+              {customer.customerType === "ecommerce" && (
+                <div className="flex gap-2">
+                  <p>Pay from Wallet:</p>
+                  <Select
+                    options={["Yes", "No"]}
+                    value={walletPay ? "Yes" : "No"}
+                    handleChange={(e) => {
+                      e.target.value === "Yes"
+                        ? setWalletPay(true)
+                        : setWalletPay(false);
+                      e.target.value === "Yes"
+                        ? setPaymentMd("Wallet")
+                        : setPaymentMd("");
+                    }}
+                  />
+                </div>
+              )}
+              {!walletPay && (
+                <div className="flex gap-2">
+                  <span className=" font-medium">Payment Mode</span>
+                  <Select
+                    options={appBrain.paymentTypes}
+                    name={"paymentMode"}
+                    value={paymentMode}
+                    children={"Select one"}
+                    handleChange={(e) => setPaymentMd(e.target.value)}
+                  />
+                </div>
+              )}
             </div>
           )}
-          {order.paymentMode && order.paymentMode !== "Wallet" ? (
+          {paymentMode && paymentMode !== "Wallet" && (
             <div className="w-full">
               <p>Receipt Information</p>
               <Textarea
-                name={"itemDescription"}
                 placeholder="Enter Receipt Information here"
-                value={order.receiptInfo}
-                handleChange={(e) => dispatch(setReceiptInfo(e.target.value))}
+                value={receipt}
+                handleChange={(e) => {
+                  setReceipt(e.target.value);
+                }}
                 rows={5}
               />
-              <div className="text-center">
-                <CustomButton
-                  handleClick={() => {
-                    openModal("pin-modal");
-                  }}
-                >
-                  Save Order
-                </CustomButton>
-              </div>
             </div>
-          ) : (
-            order.paymentMode === "Wallet" && (
-              <div className="text-center w-full">
-                <CustomButton
-                  handleClick={() => {
-                    openModal("pin-modal");
-                  }}
-                >
-                  Make Payment
-                </CustomButton>
-              </div>
+          )}
+        </div>
+        <CustomButton
+          handleClick={() => {
+            if (!paymentOnDelivery) return;
+            if (paymentOnDelivery === "No" && !paymentMode) return;
+            if (
+              paymentOnDelivery === "No" &&
+              paymentMode !== "Wallet" &&
+              !receipt
             )
-          )}
-          {order.payOnDelivery === "Yes" && (
-            <div className="text-center w-full">
-              <CustomButton
-                handleClick={() => {
-                  openModal("pin-modal");
-                }}
-              >
-                Save Order
-              </CustomButton>
-            </div>
-          )}
+              return;
+            if (
+              paymentMode === "Wallet" &&
+              customer.walletBalance < order.total
+            ) {
+              alert("Not Enough Funds in wallet");
+              return;
+            }
+            openModal("payment-summary");
+          }}
+        >
+          Set Details
+        </CustomButton>
+      </Modal>
+      <Modal id="payment-summary" title="Payment Summary">
+        <div className=" flex flex-col gap-6">
+          <p className="text-red-500">
+            Please ensure that the details you entered are correct, this is not
+            reversible
+          </p>
+          <div className=" flex flex-col md:flex-row gap-6">
+            <p>Pay on Delivery: {paymentOnDelivery}</p>
+            {paymentOnDelivery === "No" && <p>Payment Mode: {paymentMode}</p>}
+            {paymentMode && paymentMode !== "Wallet" && (
+              <p>Receipt info: {receipt}</p>
+            )}
+          </div>
+          <CustomButton handleClick={setPaymentDetails}>Proceed</CustomButton>
         </div>
       </Modal>
       <PinModal

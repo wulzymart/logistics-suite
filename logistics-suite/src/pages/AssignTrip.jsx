@@ -3,6 +3,7 @@
 import {
   collection,
   doc,
+  getDocs,
   onSnapshot,
   orderBy,
   query,
@@ -34,8 +35,8 @@ const AssignTrip = () => {
   const [selectedIds, setSelectedIds] = useState([]);
   const [tripId, setTripId] = useState("");
   const [trips, setTrips] = useState({});
-  const [tripsList, setTripsList] = useState(["Awaiting Trips"]);
-  const [pin, setPin] = useState();
+  const [tripsList, setTripsList] = useState([""]);
+  const [pin, setPin] = useState("");
   const selectedOrders = selectedIds.map((id) => orders[id]);
   function getReceiverName(params) {
     return `${params.row.receiver.firstName || ""} ${
@@ -55,9 +56,9 @@ const AssignTrip = () => {
       const attendantPhone = trips[tripId].attendantPhone;
       let date = new Date();
 
-      selectedIds.forEach(async (id) => {
+      selectedIds.map(async (id) => {
         const trackingInfo = orders[id].trackingInfo;
-        const { transship, transshipIn, transshipOut } = orders[id];
+        const { transshipOut } = orders[id];
         const newTrackingInfo = {
           info: !transshipOut
             ? "Your order has been booked for dispatch, awaiting shipment"
@@ -87,7 +88,7 @@ const AssignTrip = () => {
             history,
           },
           { merge: true }
-        ).catch((err) => alert("error: ", err));
+        );
         setPin("");
         setTripId("");
         setSelectedIds([]);
@@ -207,24 +208,23 @@ const AssignTrip = () => {
     const tripsRef = collection(db, "trips");
 
     const getTrips = async () => {
-      onSnapshot(
+      await getDocs(
         query(
           tripsRef,
           where("originStation", "==", stationName),
           where("dateCreated", ">=", Timestamp.fromDate(new Date(today)))
-        ),
-        (docs) => {
-          const tempData = {};
-          const tempList = [];
-          docs.forEach((doc) => {
-            Object.assign(tempData, { [doc.data().id]: doc.data() });
-            tempList.push(doc.data().id);
-          });
+        )
+      ).then((docs) => {
+        const tempData = {};
+        const tempList = [];
+        docs.forEach((doc) => {
+          Object.assign(tempData, { [doc.data().id]: doc.data() });
+          tempList.push(doc.data().id);
+        });
 
-          setTrips(tempData);
-          setTripsList(tempList);
-        }
-      );
+        setTrips(tempData);
+        setTripsList(tempList);
+      });
     };
     getTrips();
   }, []);
@@ -240,24 +240,27 @@ const AssignTrip = () => {
       where("transferStation", "==", stationName),
       where("deliveryStatus", "==", "At transfer station")
     );
-    onSnapshot(unassignedTripQuery, (docs) => {
-      const tempData = [];
-      docs.forEach((doc) => {
-        Object.assign(tempData, { [doc.data().id]: doc.data() });
-        tempData.push(doc.data());
-      });
+    const getOrders = async () => {
+      await getDocs(unassignedTripQuery).then((docs) => {
+        const tempData = [];
+        docs.forEach((doc) => {
+          Object.assign(tempData, { [doc.data().id]: doc.data() });
+          tempData.push(doc.data());
+        });
 
-      setNoTripOrders(tempData);
-    });
-    onSnapshot(transshippedOutQuery, (docs) => {
-      const tempData = [];
-      docs.forEach((doc) => {
-        Object.assign(tempData, { [doc.data().id]: doc.data() });
-        tempData.push(doc.data());
+        setNoTripOrders(tempData);
       });
+      await getDocs(transshippedOutQuery).then((docs) => {
+        const tempData = [];
+        docs.forEach((doc) => {
+          Object.assign(tempData, { [doc.data().id]: doc.data() });
+          tempData.push(doc.data());
+        });
 
-      setTransOutOrders(tempData);
-    });
+        setTransOutOrders(tempData);
+      });
+    };
+    getOrders();
   }, []);
   return (
     <div>
@@ -273,12 +276,12 @@ const AssignTrip = () => {
           Select Trip
         </Select>
       </div>
-      <div className="mb-8 h-[500px] p-10">
+      <div className="mb-8  p-10">
         <TableGrid
+          autoHeight
           columns={columns}
           rows={[...transhippedOutOrders, ...noTripOrders]}
           setSelectedId={setSelectedIds}
-          rowsPerPage={10}
           pageSize={10}
           checkboxSelection
         />
@@ -303,8 +306,12 @@ const AssignTrip = () => {
           <div>
             <p>Trip Id: {tripId}</p>
           </div>
-          <div className="h-[250px]">
-            <TableGrid columns={modalColumns} rows={selectedOrders} />
+          <div className="w-full">
+            <TableGrid
+              autoHeight
+              columns={modalColumns}
+              rows={selectedIds.length === 0 ? [] : selectedOrders}
+            />
           </div>
         </div>
         <CustomButton handleClick={() => openModal("pin-modal")}>

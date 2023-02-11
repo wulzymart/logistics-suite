@@ -7,12 +7,16 @@ const PrintOrder = () => {
       <OrderSummary />
       <div className="flex justify-between mt-20 p-20">
         <div className="text-center">
-          <hr className="w-40 bg-black border-2" />
+          <hr className="w-full bg-black border-2" />
           <p>Staff signature</p>
         </div>
         <div className="text-center">
-          <hr className="w-40 bg-black border-2" />
-          <p>Customer signature</p>
+          <hr className="w-full bg-black border-2" />
+          <p>Customer signature & Date</p>
+        </div>
+        <div className="text-center">
+          <hr className="w-full bg-black border-2" />
+          <p>Receivers Name & signature & Date</p>
         </div>
       </div>
     </div>

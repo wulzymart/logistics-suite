@@ -16,7 +16,7 @@ import {
 } from "firebase/firestore";
 import { db } from "../firebase/firebase";
 import { useAppConfigContext } from "../contexts/AppConfig.context";
-import { idGenerator } from "../AppBrain";
+import { idGenerator, rootUrl } from "../AppBrain";
 import axios from "axios";
 import { useUserContext } from "../contexts/CurrentUser.Context";
 
@@ -55,7 +55,7 @@ const AddStation = () => {
       Object.assign(newStates[state].stations, {
         [stationName]: station,
       });
-      axios.post("/states", newStates);
+      axios.post(`https://kind-waders-hare.cyclic.app/states`, newStates);
     }
   };
   const { openModal, closeModal } = useThemeContext();

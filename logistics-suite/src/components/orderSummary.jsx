@@ -31,13 +31,10 @@ const OrderSummary = () => {
           <p>
             Order Number: <span>{order.id}</span>
           </p>
-          <p>Tracking Number: tracking Number</p>
+          <p>Tracking Number: {order.id}</p>
+          <p>Pay on delivery: {order.payOnDelivery}</p>
           <p>
-            Pay on delivery:
-            {order.payOnDelivery}
-          </p>
-          <p>
-            Payment Type:
+            Payment Type:{" "}
             {order.paymentMode
               ? order.paymentMode
               : "No payment Information Yet"}
@@ -58,7 +55,7 @@ const OrderSummary = () => {
             Trip Number: {order.trip?.id ? order.trip.id : "trip Not assigned"}
           </p>
           <p>
-            Driver details:
+            Driver details:{" "}
             {order.trip?.driver
               ? order.trip.diverName + " " + order.trip.driverPhone
               : "Trip not assigned"}{" "}

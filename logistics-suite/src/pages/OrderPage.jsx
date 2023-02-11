@@ -1,18 +1,313 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable array-callback-return */
-import { doc, getDoc } from "firebase/firestore";
+
+import {
+  collection,
+  doc,
+  getDoc,
+  getDocs,
+  query,
+  setDoc,
+  Timestamp,
+  where,
+} from "firebase/firestore";
 import React from "react";
 import { useState } from "react";
 import { useEffect } from "react";
 import { useParams } from "react-router-dom";
+import { appBrain, idGenerator } from "../AppBrain";
+import CustomButton from "../components/button/button";
 import Header from "../components/Header";
+import Modal from "../components/Modal";
+import PinModal from "../components/PinModal";
+import Select from "../components/select-input/select";
+import Textarea from "../components/textarea/textarea";
+import { useAppConfigContext } from "../contexts/AppConfig.context";
+import { useUserContext } from "../contexts/CurrentUser.Context";
+import { useThemeContext } from "../contexts/themeContext";
 import { db } from "../firebase/firebase";
 
 const OrderPage = () => {
+  const { stationName, currentUser } = useUserContext();
+  const { openModal, closeModal } = useThemeContext();
+  const { comparePin, stations, stationsList } = useAppConfigContext();
   const { id } = useParams();
   const [order, setOrder] = useState();
   const [customer, setCustomer] = useState();
   const [Receiver, setReceiver] = useState();
   const [item, setItem] = useState();
+
+  const [tripId, setTripId] = useState("");
+  const [trips, setTrips] = useState({});
+  const [tripsList, setTripsList] = useState([""]);
+  const [action, setAction] = useState("");
+  const [paymentMode, setPaymentMd] = useState("");
+
+  const [receipt, setReceipt] = useState("");
+  const [transferStation, setTransferStation] = useState("");
+  let date = new Date();
+
+  const paymentId = idGenerator(10);
+  const [pin, setPin] = useState("");
+  const pay = () => {
+    closeModal("payment-summary");
+    closeModal("payment-modal");
+    const { history } = order;
+    history.push({
+      info: `Payment details entered by ${currentUser.displayName}`,
+      time: date.toLocaleString(),
+    });
+    setDoc(
+      doc(db, "orders", id),
+      { paid: true, paymentMode, receiptInfo: receipt },
+      { merge: true }
+    );
+  };
+  function assignTrip() {
+    const driverName = trips[tripId].driverName;
+    const attendantName = trips[tripId].attendantName;
+    const driverPhone = trips[tripId].driverPhone;
+    const attendantPhone = trips[tripId].attendantPhone;
+
+    const { transshipOut, trackingInfo, history } = order;
+    const newTrackingInfo = {
+      info: !transshipOut
+        ? "Your order has been booked for dispatch, awaiting shipment"
+        : "Your order has been assigned a new vehicle and will soon continue to the destination station",
+      time: date.toLocaleString(),
+    };
+    trackingInfo.push(newTrackingInfo);
+
+    const orderRef = doc(db, "orders", id);
+    history.push({
+      info: `Trip ${tripId} assigned by ${currentUser.displayName}`,
+      time: date.toLocaleString(),
+    });
+
+    setDoc(
+      orderRef,
+      {
+        driverName,
+        driverPhone,
+        attendantName,
+        attendantPhone,
+        tripId,
+        deliveryStatus: !transshipOut
+          ? "Booked for Dispatch"
+          : "Set to leave transfer station",
+        trackingInfo,
+        history,
+      },
+      { merge: true }
+    );
+    setTripId("");
+    closeModal("trip-assign");
+  }
+  const setTranshipment = () => {
+    const { deliveryStatus, history } = order;
+    if (deliveryStatus === "Order Received") {
+      history.push({
+        info: `Order indicated for transhipment by ${currentUser.displayName}`,
+        time: date.toLocaleString(),
+      });
+      const orderRef = doc(db, "orders", id);
+      setDoc(
+        orderRef,
+        { transferStation, tranship: true, transshipIn: true, history },
+        { merge: true }
+      );
+    } else {
+      alert(" Order has already been assigned to a trip");
+    }
+    closeModal("transship");
+    closeModal("confirm-transship");
+  };
+  const unassignTrip = () => {
+    const { trackingInfo, deliveryStatus, transshipOut, history, tripId } =
+      order;
+    if (
+      deliveryStatus === "Booked for Dispatch" ||
+      deliveryStatus === "Set to leave transfer station"
+    ) {
+      history.push({
+        info: `Trip ${tripId} unassigned by ${currentUser.displayName}`,
+        time: date.toLocaleString(),
+      });
+      const newTrackingInfo = [];
+      !transshipOut
+        ? trackingInfo.map(
+            (tracking) =>
+              tracking.info !==
+                "Your order has been booked for dispatch, awaiting shipment" &&
+              newTrackingInfo.push(tracking)
+          )
+        : trackingInfo.map(
+            (tracking) =>
+              tracking.info !==
+                "Your order has been assigned a new vehicle and will soon continue to the destination station" &&
+              newTrackingInfo.push(tracking)
+          );
+
+      const orderRef = doc(db, "orders", id);
+      setDoc(
+        orderRef,
+        {
+          driverName: "",
+          driverPhone: "",
+          attendantName: "",
+          attendantPhone: "",
+          tripId: "",
+          deliveryStatus: !transshipOut
+            ? "Order Received"
+            : "At transfer station",
+          trackingInfo: newTrackingInfo,
+          history,
+        },
+        { merge: true }
+      );
+    } else {
+      alert("Order has already been dispatched or Not assigned to trip");
+    }
+
+    closeModal("trip-unassign");
+  };
+  const setDispatch = () => {
+    const { deliveryStatus, history, trackingInfo, transshipOut } = order;
+    if (
+      deliveryStatus === "Booked for Dispatch" ||
+      deliveryStatus === "Set to leave transfer station"
+    ) {
+      history.push({
+        info: `Order set as dispatched by ${currentUser.displayName}`,
+        time: date.toLocaleString(),
+      });
+
+      trackingInfo.push({
+        info: !transshipOut
+          ? "Your order has been dispatched, It is now in transit, You will be notified when arrived"
+          : "Your order has departed transfer station for the destination station, you will be notified on arrival",
+        time: date.toLocaleString(),
+      });
+      const orderRef = doc(db, "orders", id);
+      setDoc(
+        orderRef,
+        {
+          deliveryStatus: "Dispatched",
+          trackingInfo,
+        },
+        { merge: true }
+      );
+    } else {
+      alert("Order has already been dispatched or not assigned yet");
+    }
+    closeModal("dispatched");
+  };
+  const setArrived = () => {
+    const {
+      deliveryStatus,
+      deliveryType,
+      transshipIn,
+      history,
+      trackingInfo,
+      destinationStation,
+    } = order;
+    if (deliveryStatus === "Dispatched") {
+      history.push({
+        info: `Order Recieved by ${currentUser.displayName}`,
+        time: date.toLocaleString(),
+      });
+      const trackingMessage =
+        deliveryType === "Station to Delivery man" ||
+        deliveryType === "Pickup to Delivery man"
+          ? "Your order has arrived the destination station and will be delivered to the set delivery address. please prepare your documents for identification"
+          : `Your order has arrived the destination station at ${
+              stations[destinationStation].address.streetAddress +
+              " " +
+              stations[destinationStation].address.lga +
+              " " +
+              stations[destinationStation].address.state
+            }. and awaiting pick up. kindly come with a valid means of identification`;
+
+      trackingInfo.push({
+        info: transshipIn
+          ? "Order arrived at transfer station, will be on the way to destination station soon"
+          : trackingMessage,
+        time: date.toLocaleString(),
+      });
+      const orderRef = doc(db, "orders", id);
+      const arrivedStatus = "Arrived at Destination Station";
+      if (!transshipIn) {
+        setDoc(
+          orderRef,
+          { deliveryStatus: arrivedStatus, trackingInfo, history },
+          { merge: true }
+        );
+      } else
+        setDoc(
+          orderRef,
+          {
+            deliveryStatus: "At transfer station",
+            trackingInfo,
+            history,
+            transshipIn: false,
+            transshipOut: true,
+          },
+          { merge: true }
+        );
+    } else {
+      alert("Orders is yet to be dispatched has already arrived");
+    }
+    closeModal("arrived");
+  };
+  const setDelivered = () => {
+    const {
+      deliveryStatus,
+
+      history,
+      trackingInfo,
+    } = order;
+
+    history.push({
+      info: `Order set as delivered by ${currentUser.displayName}`,
+      time: date.toLocaleString(),
+    });
+    if (
+      deliveryStatus === "Arrived at Destination Station" ||
+      deliveryStatus === "With last man delivery"
+    ) {
+      trackingInfo.push({
+        info: "Order delivered successfully",
+        time: date.toLocaleString(),
+      });
+      const orderRef = doc(db, "orders", id);
+      setDoc(
+        orderRef,
+        {
+          deliveryStatus: "Delivered",
+          trackingInfo,
+          history,
+        },
+        { merge: true }
+      );
+    } else {
+      alert("Order is yet to arrive your location");
+    }
+    closeModal("delivered");
+  };
+  const handleSubmit = () => {
+    if (comparePin(pin, currentUser.pin)) {
+      setPin("");
+      closeModal("pin-modal");
+
+      action === "pay" && pay();
+      action === "assignTrip" && assignTrip();
+      action === "unassignTrip" && unassignTrip();
+      action === "transship" && setTranshipment();
+      action === "dispatched" && setDispatch();
+      action === "arrived" && setArrived();
+      action === "delivered" && setDelivered();
+    } else alert("Incorrenct Pin");
+  };
   useEffect(() => {
     const orderRef = doc(db, "orders", id);
     const getOrder = async () => {
@@ -27,6 +322,33 @@ const OrderPage = () => {
       }
     };
     getOrder();
+  }, []);
+  useEffect(() => {
+    let today = new Date();
+    today = today.toDateString();
+
+    const tripsRef = collection(db, "trips");
+
+    const getTrips = async () => {
+      await getDocs(
+        query(
+          tripsRef,
+          where("originStation", "==", stationName),
+          where("dateCreated", ">=", Timestamp.fromDate(new Date(today)))
+        )
+      ).then((docs) => {
+        const tempData = {};
+        const tempList = [];
+        docs.forEach((doc) => {
+          Object.assign(tempData, { [doc.data().id]: doc.data() });
+          tempList.push(doc.data().id);
+        });
+
+        setTrips(tempData);
+        setTripsList(tempList);
+      });
+    };
+    getTrips();
   }, []);
   return (
     <div>
@@ -152,6 +474,57 @@ const OrderPage = () => {
                   </span>
                 </p>
               </div>
+              <div className="mt-6 flex flex-col gap-6">
+                {!order.paid && (
+                  <CustomButton handleClick={() => openModal("payment-modal")}>
+                    Enter Payment Info
+                  </CustomButton>
+                )}
+                {order.originStation === currentUser.station &&
+                  !order.tripId && (
+                    <CustomButton handleClick={() => openModal("trip-assign")}>
+                      Assign Trip
+                    </CustomButton>
+                  )}
+                {order.originStation === currentUser.station &&
+                  !order.tripId && (
+                    <CustomButton handleClick={() => openModal("transship")}>
+                      Transship
+                    </CustomButton>
+                  )}
+                {order.originStation === currentUser.station &&
+                  order.tripId &&
+                  (order.deliveryStatus === "Booked for Dispatch" ||
+                    order.deliveryStatus ===
+                      "Set to leave transfer station") && (
+                    <CustomButton
+                      handleClick={() => openModal("trip-unassign")}
+                    >
+                      Un-Assign Trip
+                    </CustomButton>
+                  )}
+                {order.originStation === currentUser.station &&
+                  (order.deliveryStatus === "Booked for Dispatch" ||
+                    order.deliveryStatus ===
+                      "Set to leave transfer station") && (
+                    <CustomButton handleClick={() => openModal("dispatched")}>
+                      Set as Dispatched
+                    </CustomButton>
+                  )}
+                {order.destinationStation === currentUser.station &&
+                  order.deliveryStatus === "Dispatched" && (
+                    <CustomButton handleClick={() => openModal("arrived")}>
+                      Arrived
+                    </CustomButton>
+                  )}
+                {order.destinationStation === currentUser.station &&
+                  (order.deliveryStatus === "Arrived at Destination Station" ||
+                    order.deliveryStatus === "With last man delivery") && (
+                    <CustomButton handleClick={() => openModal("delivered")}>
+                      Delivered
+                    </CustomButton>
+                  )}
+              </div>
             </div>
             <div className=" h-full">
               <div className=" bg-blue-500 text-white w-full p-8 rounded-lg mb-4">
@@ -266,18 +639,226 @@ const OrderPage = () => {
                   Tracking and Delivery
                 </p>
                 <div className="flex flex-wrap gap-x-8 gap-y-2 mb-2">
-                  <p className="w-42">
-                    <span>Delivery Status: </span>
-                    <span>Not Delivered</span>
+                  <p className="mb-6">
+                    <span className="font-bold">Delivery Status: </span>
+                    <span>{order.deliveryStatus}</span>
                   </p>
-                  <p className="w-42">
-                    <span>Tracking Details: </span>
-                    <span></span>
-                  </p>
+                </div>
+                <p className="font-bold mb-4">Tracking Details:</p>
+                <div className="flex flex-col gap-4 w-full">
+                  {order.trackingInfo.map((item, i) => (
+                    <div key={i} className="flex justify-between">
+                      <p className="w-[50%]">
+                        <span className="font-bold">Info:</span> {item.info}
+                      </p>
+                      <p>
+                        <span className="font-bold">Time:</span> {item.time}
+                      </p>
+                    </div>
+                  ))}
                 </div>
               </div>
             </div>
           </div>
+          <div className="w-full rounded-lg p-8 bg-blue-200 flex flex-wrap justify-around gap-y-4">
+            <p className="font-bold text-lg mb-6">Order Story</p>
+            <div className="flex flex-col gap-4 w-full">
+              {order.history.map((item, i) => (
+                <div key={i} className="flex justify-between">
+                  <p className="w-[50%]">
+                    <span className="font-bold">Info:</span> {item.info}
+                  </p>
+                  <p>
+                    <span className="font-bold">Time:</span> {item.time}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </div>
+          <Modal id="payment-modal" title="Enter Payment Details">
+            <div className=" w-full">
+              <div className="flex gap-2 w-full mb-4 items-center">
+                <span className=" font-medium">Payment:</span>
+                <Select
+                  options={appBrain.paymentTypes}
+                  value={paymentMode}
+                  children={"Select one"}
+                  handleChange={(e) => setPaymentMd(e.target.value)}
+                />
+              </div>
+
+              {paymentMode && (
+                <div className="w-full mb-4">
+                  <p className="mb-3">Receipt Information</p>
+                  <Textarea
+                    placeholder="Enter Receipt Information here"
+                    value={receipt}
+                    handleChange={(e) => {
+                      setReceipt(e.target.value);
+                    }}
+                    rows={5}
+                  />
+                </div>
+              )}
+            </div>
+            <CustomButton
+              handleClick={() => {
+                if (!paymentMode) return;
+                if (paymentMode && !receipt) return;
+
+                openModal("payment-summary");
+              }}
+            >
+              Set Payment
+            </CustomButton>
+          </Modal>
+          <Modal id="payment-summary" title="Payment Summary">
+            <div className=" flex flex-col gap-6">
+              <p className="text-red-500">
+                Please ensure that the details you entered are correct, this is
+                not reversible
+              </p>
+              <div className=" flex flex-col md:flex-row gap-6">
+                <p>Payment Mode: {paymentMode}</p>
+
+                {paymentMode && <p>Receipt info: {receipt}</p>}
+              </div>
+              <CustomButton
+                handleClick={() => {
+                  setAction("pay");
+                  openModal("pin-modal");
+                }}
+              >
+                Proceed
+              </CustomButton>
+            </div>
+          </Modal>
+          <Modal id="trip-assign" title="Assign Trip">
+            <div className="w-full mt-8 mb-8 flex flex-col gap-10">
+              <div className="flex gap-4 items-center">
+                <p className="text-lg min-w-fit">Select trip</p>
+                <Select
+                  options={tripsList}
+                  value={tripId}
+                  handleChange={(e) => setTripId(e.target.value)}
+                  children="Select Trip"
+                >
+                  Select Trip
+                </Select>
+              </div>
+            </div>
+            <CustomButton
+              handleClick={() => {
+                tripId ? openModal("pin-modal") : alert("No trip selected");
+                setAction("assignTrip");
+              }}
+            >
+              Set Trip
+            </CustomButton>
+          </Modal>
+          <Modal id="trip-unassign" title="Unassign Trip">
+            <div className="p-10">
+              <p className="text-red-600 mb-8">
+                Are you sure you want to unassign trip for this order
+              </p>
+              <CustomButton
+                handleClick={() => {
+                  setAction("unassignTrip");
+                  openModal("pin-modal");
+                }}
+              >
+                Proceed
+              </CustomButton>
+            </div>
+          </Modal>
+          <Modal id="transship" title="Set Transfer Station">
+            <div className="w-full mt-8 mb-8 flex flex-col gap-10">
+              <div className="flex gap-4 items-center">
+                <p className="text-lg min-w-fit">Select Station</p>
+
+                <Select
+                  options={stationsList}
+                  value={transferStation}
+                  handleChange={(e) => setTransferStation(e.target.value)}
+                  children="Select Station"
+                />
+              </div>
+            </div>
+            <CustomButton
+              handleClick={() => {
+                transferStation
+                  ? openModal("confirm-transship")
+                  : alert("No Station selected");
+              }}
+            >
+              Set Transfer station
+            </CustomButton>
+          </Modal>
+          <Modal id="confirm-transship" title="Confirm Transfer Station">
+            <div className="p-8 mb-8">
+              <p className="text-xl font-bold">Confirm Transfer Station</p>
+              <p>Transfer station: {transferStation}</p>
+            </div>
+            <CustomButton
+              handleClick={() => {
+                openModal("pin-modal");
+
+                setAction("transship");
+              }}
+            >
+              Proceed
+            </CustomButton>
+          </Modal>
+          <Modal id="dispatched" title="Confirm action">
+            <div className="p-8 mb-8">
+              <p className="text-xl font-bold">Set order as dispatched.</p>
+              <p className="text-red-600">Note: action is not reversible</p>
+            </div>
+            <CustomButton
+              handleClick={() => {
+                openModal("pin-modal");
+
+                setAction("dispatched");
+              }}
+            >
+              Proceed
+            </CustomButton>
+          </Modal>
+          <Modal id="arrived" title="Confirm action">
+            <div className="p-8 mb-8">
+              <p className="text-xl font-bold">Set order as arrived.</p>
+              <p className="text-red-600">Note: action is not reversible</p>
+            </div>
+            <CustomButton
+              handleClick={() => {
+                openModal("pin-modal");
+
+                setAction("arrived");
+              }}
+            >
+              Proceed
+            </CustomButton>
+          </Modal>
+          <Modal id="delivered" title="Confirm action">
+            <div className="p-8 mb-8">
+              <p className="text-xl font-bold">Set order as Delivered.</p>
+              <p className="text-red-600">Note: action is not reversible</p>
+            </div>
+            <CustomButton
+              handleClick={() => {
+                openModal("pin-modal");
+
+                setAction("delivered");
+              }}
+            >
+              Proceed
+            </CustomButton>
+          </Modal>
+          <PinModal
+            pin={pin}
+            handleChange={(e) => setPin(e.target.value)}
+            handleSubmit={handleSubmit}
+          />
         </div>
       ) : (
         <p>loading</p>

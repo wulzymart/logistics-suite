@@ -41,6 +41,13 @@ const OutBound = () => {
       params.row.receiver.address.lga || ""
     } ${params.row.receiver.address.state || ""}`;
   }
+  function getPaymentStatus(params) {
+    const paid = params.row.paid;
+
+    if (paid) {
+      return "Paid";
+    } else return "Unpaid";
+  }
   const columns = [
     {
       field: "id",
@@ -97,10 +104,19 @@ const OutBound = () => {
       width: 150,
     },
     {
-      field: "paymentStatus",
+      field: "paid",
       headerName: "Payment Status",
-
       width: 150,
+      valueGetter: getPaymentStatus,
+      renderCell: (param) => (
+        <p
+          className={`${
+            param.value === "Unpaid" ? "text-red-500" : "text-green-800"
+          }`}
+        >
+          {param.value}
+        </p>
+      ),
     },
   ];
   const modalColumns = [
@@ -265,12 +281,13 @@ const OutBound = () => {
   return (
     <div>
       <Header title="View Outbound Orders" />
-      <div className="h-[500px]">
+      <div className="w-full">
         <TableGrid
           columns={columns}
           rows={rows}
           setSelectedId={setSelectedIds}
           checkboxSelection
+          autoHeight
         />
       </div>
       <div className="flex flex-col md:flex-row justify-end gap-4 mt-4">
@@ -322,8 +339,12 @@ const OutBound = () => {
               />
             </div>
           )}
-          <div className="h-[250px] mt-6">
-            <TableGrid columns={modalColumns} rows={selectedOrders} />
+          <div className="w-full mt-6">
+            <TableGrid
+              columns={modalColumns}
+              rows={selectedOrders}
+              autoHeight
+            />
           </div>
         </div>
         <CustomButton handleClick={() => openModal("pin-modal")}>

@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { appBrain } from "../../AppBrain";
+import { appBrain, idGenerator } from "../../AppBrain";
 import Select from "../select-input/select";
 import PhoneInput from "react-phone-input-2";
 import "react-phone-input-2/lib/style.css";
@@ -8,6 +8,7 @@ import "react-datepicker/dist/react-datepicker.css";
 import Input from "../input/input";
 import { HiSearch } from "react-icons/hi";
 import {
+  setCustomerId,
   setCustomerFirstName,
   setCustomerLastName,
   setCustomerPhone,
@@ -42,150 +43,157 @@ const CustomerForm = () => {
           <Select
             options={appBrain.customerOptions}
             value={newCustomer}
-            handleChange={(e) => setNewCustomer(e.target.value)}
+            handleChange={(e) => {
+              const value = e.target.value;
+              value === "Yes" && dispatch(setCustomerId(idGenerator(12)));
+              setNewCustomer(value);
+            }}
             children={"Select One"}
           />
         </div>
-        <div className="w-full">
-          <p className="text-red-800 font-light text-xs mb-3">
-            Enter customer information; (
-            <i>
-              Phone: *+2348012345678, *First name and *Last name, and other
-              details
-            </i>
-            )
-          </p>
-          <div className=" mb-8 flex flex-col md:flex-row gap-8">
-            <div className="w-full relative min-h-full">
-              <PhoneInput
-                specialLabel="customer Phone Number"
-                placeholder="Phone Number"
-                country={"ng"}
-                onlyCountries={["ng"]}
-                value={customer.phoneNumber}
-                prefix="+"
-                onChange={(phone) => {
-                  phone = "+" + phone;
+        {newCustomer && (
+          <div className="w-full">
+            <p className="text-red-800 font-light text-xs mb-3">
+              Enter customer information; (
+              <i>
+                Phone: *+2348012345678, *First name and *Last name, and other
+                details
+              </i>
+              )
+            </p>
+            <div className=" mb-8 flex flex-col md:flex-row gap-8">
+              <div className="w-full relative min-h-full">
+                <PhoneInput
+                  specialLabel="customer Phone Number"
+                  placeholder="Phone Number"
+                  country={"ng"}
+                  onlyCountries={["ng"]}
+                  value={customer.phoneNumber}
+                  prefix="+"
+                  onChange={(phone) => {
+                    phone = "+" + phone;
 
-                  dispatch(setCustomerPhone(phone));
-                }}
-                containerClass={" !w-full"}
-                inputClass={"!w-full !h-11"}
-              />
-
-              {newCustomer === "No" && (
-                <button
-                  onClick={async () => {
-                    const dbCustomer = await getCustomer(customer.phoneNumber);
-                    dbCustomer && dispatch(getCustomerFromDB(dbCustomer));
-                  
+                    dispatch(setCustomerPhone(phone));
                   }}
-                  className="bg-blue-800 text-xl font-bold text-white absolute top-0 right-0 rounded-lg min-h-full w-10 flex justify-center items-center"
-                >
-                  <HiSearch />
-                </button>
-              )}
-            </div>
-
-            <Input
-              type={"email"}
-              name={"customerEmail"}
-              placeholder={"customer@example.com"}
-              value={customer.email}
-              handleChange={(e) => dispatch(setCustomerEmail(e.target.value))}
-              disabled={newCustomer === "No"}
-            />
-          </div>
-          <div className=" flex flex-col md:flex-row gap-8">
-            <Input
-              type={"text"}
-              name={"customerFirstName"}
-              required
-              placeholder={"First Name"}
-              value={customer.firstName}
-              handleChange={(e) =>
-                dispatch(setCustomerFirstName(e.target.value))
-              }
-              disabled={newCustomer === "No"}
-            />
-            <Input
-              type={"text"}
-              name={"customerLastName"}
-              required
-              placeholder={"Last Name"}
-              value={customer.lastName}
-              handleChange={(e) =>
-                dispatch(setCustomerLastName(e.target.value))
-              }
-              disabled={newCustomer === "No"}
-            />
-          </div>
-
-          <div className=" mt-8 flex flex-col md:flex-row  gap-8">
-            <div className="w-full flex items-center">
-              <p className="min-w-fit mr-4">Date of Birth</p>
-              <DatePicker
-                selected={
-                  newCustomer === "No"
-                    ? customer.dateOfBirth
-                      ? new Date(customer.dateOfBirth)
-                      : ""
-                    : selectedDate
-                }
-                onChange={(date) => {
-                  dispatch(setCustomerDOB(new Date(date).toISOString()));
-                  setSelectedDate(new Date(date));
-                }}
-                dateFormat="dd/MM/yyyy"
-                className="w-full rounded-lg"
-              />
-            </div>
-            <Select
-              options={appBrain.customersSex}
-              children={"Select Sex"}
-              value={customer.sex}
-              handleChange={(e) => dispatch(setCustomerSex(e.target.value))}
-            />
-          </div>
-          <div>
-            <p className="mt-8  font-light  mb-1">Customer Address</p>
-            <div className="  flex flex-col   gap-3">
-              <div className="mb-8 flex flex-col md:flex-row   gap-3">
-                <Select
-                  name={"customerState"}
-                  options={statesList ? statesList : ["loading"]}
-                  value={customer.address.state}
-                  handleChange={(e) =>
-                    dispatch(setCustomerState(e.target.value))
-                  }
-                  children={"Select State"}
+                  containerClass={" !w-full"}
+                  inputClass={"!w-full !h-11"}
                 />
-                <Select
-                  name={"customerLga"}
-                  value={customer.address.lga}
-                  options={
-                    customer?.address.state
-                      ? states[customer.address.state].lgas
-                      : [""]
-                  }
-                  handleChange={(e) => dispatch(setCustomerLga(e.target.value))}
-                  children={"Select LGA"}
-                />
+
+                {newCustomer === "No" && (
+                  <button
+                    onClick={async () => {
+                      const dbCustomer = await getCustomer(
+                        customer.phoneNumber
+                      );
+                      console.log(dbCustomer);
+                      dbCustomer && dispatch(getCustomerFromDB(dbCustomer));
+                    }}
+                    className="bg-blue-800 text-xl font-bold text-white absolute top-0 right-0 rounded-lg min-h-full w-10 flex justify-center items-center"
+                  >
+                    <HiSearch />
+                  </button>
+                )}
               </div>
 
               <Input
+                type={"email"}
+                placeholder={"customer@example.com*"}
+                value={customer.email}
+                handleChange={(e) => dispatch(setCustomerEmail(e.target.value))}
+                disabled={newCustomer === "No"}
+              />
+            </div>
+            <div className=" flex flex-col md:flex-row gap-8">
+              <Input
                 type={"text"}
-                name={"customerStreetAddress"}
-                placeholder={"Street Address"}
-                value={customer.address.streetAddress}
+                required
+                placeholder={"First Name*"}
+                value={customer.firstName}
                 handleChange={(e) =>
-                  dispatch(setCustomerStreetAddress(e.target.value))
+                  dispatch(setCustomerFirstName(e.target.value))
+                }
+                disabled={newCustomer === "No"}
+              />
+              <Input
+                type={"text"}
+                required
+                placeholder={"Last Name*"}
+                value={customer.lastName}
+                handleChange={(e) =>
+                  dispatch(setCustomerLastName(e.target.value))
                 }
                 disabled={newCustomer === "No"}
               />
             </div>
+
+            <div className=" mt-8 flex flex-col md:flex-row  gap-8">
+              <div className="w-full flex items-center">
+                <p className="min-w-fit mr-4">Date of Birth</p>
+                <DatePicker
+                  selected={
+                    newCustomer === "No"
+                      ? customer.dateOfBirth
+                        ? new Date(customer.dateOfBirth)
+                        : selectedDate
+                      : selectedDate
+                  }
+                  onChange={(date) => {
+                    dispatch(setCustomerDOB(new Date(date).toISOString()));
+                    setSelectedDate(new Date(date));
+                  }}
+                  dateFormat="dd/MM/yyyy"
+                  className="w-full rounded-lg"
+                />
+              </div>
+              <Select
+                options={appBrain.customersSex}
+                children={"Select Sex"}
+                value={customer.sex}
+                handleChange={(e) => dispatch(setCustomerSex(e.target.value))}
+              />
+            </div>
+            <div>
+              <p className="mt-8  font-light  mb-1">Customer Address</p>
+              <div className="  flex flex-col   gap-3">
+                <div className="mb-8 flex flex-col md:flex-row   gap-3">
+                  <Select
+                    name={"customerState"}
+                    options={statesList ? statesList : ["loading"]}
+                    value={customer.address.state}
+                    handleChange={(e) =>
+                      dispatch(setCustomerState(e.target.value))
+                    }
+                    children={"Select State"}
+                  />
+                  <Select
+                    name={"customerLga"}
+                    value={customer.address.lga}
+                    options={
+                      customer?.address.state
+                        ? states[customer.address.state].lgas
+                        : [""]
+                    }
+                    handleChange={(e) =>
+                      dispatch(setCustomerLga(e.target.value))
+                    }
+                    children={"Select LGA"}
+                  />
+                </div>
+
+                <Input
+                  type={"text"}
+                  name={"customerStreetAddress"}
+                  placeholder={"Street Address"}
+                  value={customer.address.streetAddress}
+                  handleChange={(e) =>
+                    dispatch(setCustomerStreetAddress(e.target.value))
+                  }
+                  disabled={newCustomer === "No"}
+                />
+              </div>
+            </div>
           </div>
-        </div>
+        )}
       </div>
     </div>
   );
