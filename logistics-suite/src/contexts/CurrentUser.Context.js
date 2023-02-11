@@ -9,36 +9,37 @@ import { app } from "../firebase/firebase";
 const UserContext = createContext();
 
 export const UserContextProvider = ({ children }) => {
+  console.log("loaded");
   const [currentUser, setCurrentUser] = useState("loading");
   const [stationName, setStationName] = useState("");
   const [stationId, setStationId] = useState("");
   const [staffState, setStaffState] = useState("");
   const auth = getAuth(app);
-  useEffect(() => {
-    return async () => {
-      return onAuthStateChanged(auth, async (user) => {
-        if (user) {
-          const uid = user.uid;
-          await axios
-            .get(`https://kind-waders-hare.cyclic.app/users`, {
-              params: { uid },
-            })
-            .then((data) => {
-              const loggedInUser = data.data;
 
-              setCurrentUser(loggedInUser);
-              setStationName(loggedInUser.station);
-              setStationId(loggedInUser.stationId);
-              setStaffState(loggedInUser.address.state);
-            });
-        } else {
-          setCurrentUser(null);
-          setStationName("");
-          setStationId("");
-          setStaffState("");
-        }
-      });
-    };
+  const authChange = () =>
+    onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        const uid = user.uid;
+        await axios
+          .get(`https://kind-waders-hare.cyclic.app/users/?uid=${uid}`)
+          .then((data) => {
+            console.log(data.data);
+            const loggedInUser = data.data;
+            setCurrentUser(loggedInUser);
+            setStationName(loggedInUser.station);
+            setStationId(loggedInUser.stationId);
+            setStaffState(loggedInUser.address.state);
+          });
+      } else {
+        setCurrentUser(null);
+        setStationName("");
+        setStationId("");
+        setStaffState("");
+      }
+    });
+
+  useEffect(() => {
+    return authChange();
   }, []);
 
   return (

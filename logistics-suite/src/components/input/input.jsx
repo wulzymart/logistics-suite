@@ -9,7 +9,7 @@ const Input = ({
 }) => (
   <div className=" w-full ">
     <input
-      className="rounded-lg font-openSans  w-full py-2 pl-3  border-solid border-1 focus:border-0  disabled:bg-white"
+      className="rounded-lg font-openSans  w-full py-2 pl-3  border-solid border-1 focus:border-1 invalid:border-red-600  disabled:bg-white"
       type={type}
       name={name}
       placeholder={placeholder}

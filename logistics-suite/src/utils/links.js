@@ -13,7 +13,7 @@ import {
 } from "react-icons/fa";
 import { AiOutlineSend } from "react-icons/ai";
 import { RiLoginBoxFill } from "react-icons/ri";
-import { GiWindyStripes } from "react-icons/gi";
+import { GiMoneyStack, GiWindyStripes } from "react-icons/gi";
 import { BiTrip } from "react-icons/bi";
 import { GiBattleship } from "react-icons/gi";
 import { HiOfficeBuilding, HiUserGroup } from "react-icons/hi";
@@ -81,6 +81,16 @@ export const links = [
         link: "/trips",
       },
       {
+        name: "New Expense",
+        icon: <GiMoneyStack />,
+        link: "/new-expense",
+      },
+      {
+        name: "Station Expenses",
+        icon: <GiMoneyStack />,
+        link: "/expenses",
+      },
+      {
         name: "Customers",
         icon: <HiUserGroup />,
         link: "/customers",
@@ -111,6 +121,11 @@ export const links = [
         name: "Register Ecommerce",
         icon: <MdAddBusiness />,
         link: "/admin/new-ecommerce-customer",
+      },
+      {
+        name: "Manage Expenses",
+        icon: <GiMoneyStack />,
+        link: "/admin/manage-expenses",
       },
       {
         name: "Add New Staff",

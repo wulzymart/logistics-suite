@@ -33,6 +33,9 @@ import Trip from "./pages/Trip";
 import Customers from "./pages/Customers";
 import Staffs from "./pages/Staffs";
 import Staff from "./pages/Staff";
+import AddExpense from "./pages/AddExpense";
+import Expenses from "./pages/Expenses";
+import ManageExpenses from "./pages/ManageExpenses";
 
 function App() {
   const { currentMode } = useThemeContext();
@@ -72,6 +75,8 @@ function App() {
                       />
                     </Route>
                     <Route path="create-trip" element={<CreateTrip />} />
+                    <Route path="new-expense" element={<AddExpense />} />
+                    <Route path="expenses" element={<Expenses />} />
                     <Route path="inbound" element={<Inbound />} />
                     <Route path="outbound" element={<Outbound />} />
                     <Route path="assign-trip" element={<AssignTrip />} />
@@ -82,6 +87,10 @@ function App() {
                     <Route path="/trips/:trip" element={<Trip />} />
                     <Route path="admin">
                       <Route path="staff-registration" element={<NewStaff />} />
+                      <Route
+                        path="manage-expenses"
+                        element={<ManageExpenses />}
+                      />
                       <Route path="stations" element={<ManageStations />} />
                       <Route path="staff" element={<Staffs />} />
                       <Route path="staff/:id" element={<Staff />} />
