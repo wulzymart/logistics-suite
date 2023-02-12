@@ -4,10 +4,9 @@ import {
   collection,
   doc,
   getDocs,
-  onSnapshot,
-  orderBy,
+  
   query,
-  serverTimestamp,
+
   setDoc,
   Timestamp,
   where,
@@ -265,7 +264,7 @@ const AssignTrip = () => {
   return (
     <div>
       <h1 className="text-3xl font-bold text-center mb-8">Assign trip</h1>
-      <div className="flex gap-4 items-center">
+      <div className="flex gap-4 items-center mb-8">
         <p className="text-lg min-w-fit">Select trip</p>
         <Select
           options={tripsList}
@@ -276,7 +275,7 @@ const AssignTrip = () => {
           Select Trip
         </Select>
       </div>
-      <div className="mb-8  p-10">
+      <div className="mb-8  md:p-10">
         <TableGrid
           autoHeight
           columns={columns}

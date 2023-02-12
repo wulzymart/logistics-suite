@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import {
   collection,
   doc,
@@ -264,22 +265,13 @@ const CustomerPage = () => {
             </div>
             <div className="min-w-52 flex flex-col gap-4">
               <p className="flex flex-col   gap-2 mb-2">
-                <span className="font-bold">Date Created:</span>
+                <span className="font-bold">Date Registered</span>
                 <span>
-                  {customer.dateRegistered
-                    .toDate()
-                    .toDateString()
-                    .split(" ")[1] +
+                  {customer.dateCreated.toDate().toDateString().split(" ")[1] +
                     " " +
-                    customer.dateRegistered
-                      .toDate()
-                      .toDateString()
-                      .split(" ")[2] +
+                    customer.dateCreated.toDate().toDateString().split(" ")[2] +
                     " " +
-                    customer.dateRegistered
-                      .toDate()
-                      .toDateString()
-                      .split(" ")[3]}
+                    customer.dateCreated.toDate().toDateString().split(" ")[3]}
                 </span>
               </p>
             </div>
@@ -308,11 +300,13 @@ const CustomerPage = () => {
               <p className="">
                 <span>Date of Birth: </span>
                 <span>
-                  {customer.dateOfBirth.toDate().toDateString().split(" ")[1] +
+                  {new Date(customer.dateOfBirth).toDateString().split(" ")[1] +
                     " " +
-                    customer.dateOfBirth.toDate().toDateString().split(" ")[2] +
+                    new Date(customer.dateOfBirth)
+                      .toDateString()
+                      .split(" ")[2] +
                     " " +
-                    customer.dateOfBirth.toDate().toDateString().split(" ")[3]}
+                    new Date(customer.dateOfBirth).toDateString().split(" ")[3]}
                 </span>
               </p>
             </div>

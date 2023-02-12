@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import {
   collection,
   endBefore,
@@ -52,20 +53,20 @@ const Customers = () => {
   const queryCustomers = query(
     customersRef,
     where("address.state", "==", state),
-    orderBy("dateRegistered", "asc"),
+    orderBy("dateCreated", "asc"),
     limit(pageSize)
   );
   const nextCustomers = query(
     customersRef,
     where("address.state", "==", state),
-    orderBy("dateRegistered", "asc"),
+    orderBy("dateCreated", "asc"),
     startAfter(lastVisible),
     limit(pageSize)
   );
   const previousCustomers = query(
     customersRef,
     where("address.state", "==", state),
-    orderBy("dateRegistered", "asc"),
+    orderBy("dateCreated", "asc"),
     endBefore(firstVisible),
     limitToLast(pageSize)
   );
@@ -132,7 +133,7 @@ const Customers = () => {
     <div>
       <Header title="View Customers" />
       <div className=" bg-blue-200 p-4 rounded-lg flex flex-col md:flex-row justify-end gap-4">
-        <div className="w-1/4 flex relative">
+        <div className="md:w-1/4 flex relative">
           <Select
             options={statesList ? statesList : [""]}
             children="Select State"
@@ -150,7 +151,7 @@ const Customers = () => {
           </button>
         </div>
 
-        <div className=" w-1/4 flex flex-col md:flex-row gap-8">
+        <div className=" md:w-1/4 flex flex-col md:flex-row gap-8">
           <div className="w-full relative min-h-full">
             <PhoneInput
               specialLabel="customer Phone Number"

@@ -38,7 +38,7 @@ import { idGenerator } from "../AppBrain";
 
 const RegisterEcommerce = () => {
   const dispatch = useDispatch();
-  const [saved, setSaved] = useState(false);
+
   const customer = useSelector((state) => state.customer);
   const { states, statesList, comparePin } = useAppConfigContext();
   const { currentUser } = useUserContext();
@@ -56,20 +56,30 @@ const RegisterEcommerce = () => {
       const querySnapshot = await getDocs(q);
       const customerRef = doc(db, "customers", customer.id);
       if (querySnapshot.empty) {
-        setDoc(customerRef, customer);
+        setDoc(customerRef, {
+          ...customer,
+          dateCreated: serverTimestamp(),
+          history: [
+            {
+              info: `Customer created by ${currentUser.displayName}`,
+              time: new Date().toLocaleString(),
+            },
+          ],
+        });
         closeModal("pin-modal");
         closeModal("newEcommerce-modal");
         dispatch(resetCustomer());
         const paymentId = idGenerator(10);
+
         setDoc(doc(db, "income", paymentId), {
           id: paymentId,
           customerId: customer.id,
           customerName: customer.firstName + " " + customer.lastName,
           businessName: customer.businessName,
-          amount: customer.walletBalance,
+          amount: customer.WalletBalance,
           purpose: "Wallet Top-up",
           paymentMode,
-          receiptInfo,
+          receiptInfo: customer.receiptInfo,
           dateMade: serverTimestamp(),
           processedBy: currentUser.displayName,
           station: currentUser.station,

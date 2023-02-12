@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import {
   collection,
   endBefore,
@@ -133,7 +134,7 @@ const Staffs = () => {
     <div>
       <Header title="View Staffs" />
       <div className=" bg-blue-200 p-4 rounded-lg flex flex-col md:flex-row justify-end gap-4">
-        <div className="w-1/4 flex relative">
+        <div className="md:w-1/4 flex relative">
           <Select
             options={stationsList ? stationsList : [""]}
             children="Select Station"
@@ -151,7 +152,7 @@ const Staffs = () => {
           </button>
         </div>
 
-        <div className=" w-1/4 flex flex-col md:flex-row gap-8">
+        <div className=" md:w-1/4 flex flex-col md:flex-row gap-8">
           <div className="w-full relative min-h-full">
             <Input
               type="text"

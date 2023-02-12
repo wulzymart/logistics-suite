@@ -5,6 +5,10 @@ const initialState = {
   firstName: "",
   lastName: "",
   phoneNumber: "",
+  bank: {
+    accoutNo: "",
+    bankName: "",
+  },
   gender: "",
   email: "",
   password: "",

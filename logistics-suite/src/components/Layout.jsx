@@ -55,7 +55,7 @@ const Layout = () => {
           <NavBar />
         </div>
         {themeSettings && <ThemeSettings />}
-        <div className="m-10 ">
+        <div className="p-10 pt-20">
           <Outlet />
         </div>
       </div>
