@@ -37,6 +37,14 @@ import AddExpense from "./pages/AddExpense";
 import Expenses from "./pages/Expenses";
 import ManageExpenses from "./pages/ManageExpenses";
 
+import Inflow from "./pages/Inflow";
+import Outflow from "./pages/Outflow";
+import ManagePricelist from "./pages/ManagePricelist";
+import AssignLocalTrip from "./pages/AssignLocalTrip";
+import NotFound from "./pages/NotFound";
+import AdminRoutes from "./utils/AdminRoutes";
+import SuperAdminRoutes from "./utils/SuperAdminRoutes";
+
 function App() {
   const { currentMode } = useThemeContext();
   const { states } = useAppConfigContext();
@@ -59,14 +67,13 @@ function App() {
                         currentUser !== "loading" ? <Summary /> : "loading"
                       }
                     />
-                    <Route path="profile">
-                      <Route
-                        index
-                        element={
-                          currentUser !== "loading" ? <Profile /> : "loading"
-                        }
-                      />
-                    </Route>
+                    <Route
+                      path="profile"
+                      element={
+                        currentUser !== "loading" ? <Profile /> : "loading"
+                      }
+                    />
+
                     <Route path="new-waybill">
                       <Route index element={<NewWaybil />} />
                       <Route
@@ -76,33 +83,56 @@ function App() {
                     </Route>
                     <Route path="create-trip" element={<CreateTrip />} />
                     <Route path="new-expense" element={<AddExpense />} />
-                    <Route path="expenses" element={<Expenses />} />
+
                     <Route path="inbound" element={<Inbound />} />
                     <Route path="outbound" element={<Outbound />} />
                     <Route path="assign-trip" element={<AssignTrip />} />
+                    <Route
+                      path="assign-local-trip"
+                      element={<AssignLocalTrip />}
+                    />
                     <Route path="orders/:id" element={<OrderPage />} />
                     <Route path="/customers" element={<Customers />} />
                     <Route path="/customers/:id" element={<CustomerPage />} />
                     <Route path="trips" element={<Trips />} />
                     <Route path="/trips/:trip" element={<Trip />} />
-                    <Route path="admin">
-                      <Route path="staff-registration" element={<NewStaff />} />
-                      <Route
-                        path="manage-expenses"
-                        element={<ManageExpenses />}
-                      />
-                      <Route path="stations" element={<ManageStations />} />
-                      <Route path="staff" element={<Staffs />} />
-                      <Route path="staff/:id" element={<Staff />} />
-                      <Route path="add-stations" element={<AddStation />} />
-                      <Route path="add-vehicle" element={<AddVehicle />} />
-                      <Route path="create-route" element={<CreateRoute />} />
-                      <Route
-                        path="new-ecommerce-customer"
-                        element={<RegisterEcommerce />}
-                      />
+                    <Route element={<AdminRoutes />}>
+                      <Route path="admin">
+                        <Route path="stations" element={<ManageStations />} />
+                        <Route path="staff" element={<Staffs />} />
+                        <Route path="staff/:id" element={<Staff />} />
+                        <Route path="expenses" element={<Expenses />} />
+                        <Route path="create-route" element={<CreateRoute />} />
+                        <Route
+                          path="new-ecommerce-customer"
+                          element={<RegisterEcommerce />}
+                        />
+                      </Route>
+                    </Route>
+                    <Route element={<SuperAdminRoutes />}>
+                      <Route path="super-admin">
+                        <Route
+                          path="staff-registration"
+                          element={<NewStaff />}
+                        />
+                        <Route
+                          path="manage-expenses"
+                          element={<ManageExpenses />}
+                        />
+                        <Route path="money-in" element={<Inflow />} />
+                        <Route path="money-out" element={<Outflow />} />
+
+                        <Route path="add-stations" element={<AddStation />} />
+                        <Route path="add-vehicle" element={<AddVehicle />} />
+                        <Route
+                          path="manage-pricing"
+                          element={<ManagePricelist />}
+                        />
+                        <Route path="create-route" element={<CreateRoute />} />
+                      </Route>
                     </Route>
                   </Route>
+                  <Route path="*" element={<NotFound />} />
                 </Route>
 
                 <Route element={<LoginRoute />}>

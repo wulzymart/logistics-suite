@@ -156,24 +156,28 @@ const OutBound = () => {
   const setTranshipment = () => {
     let uneditableOrders = false;
     selectedIds.forEach((id) => {
-      const { deliveryStatus, history } = outRowsMap[id];
-      if (deliveryStatus === "Order Received") {
-        history.push({
-          info: `Order indicated for transhipment by ${currentUser.displayName}`,
-          time: date.toLocaleString(),
-        });
-        const orderRef = doc(db, "orders", id);
-        setDoc(
-          orderRef,
-          { transferStation, tranship: true, transshipIn: true, history },
-          { merge: true }
-        );
-      } else {
-        uneditableOrders = true;
-      }
+      const { deliveryStatus, history, intraCity } = outRowsMap[id];
+      if (intraCity === "Yes") {
+        if (deliveryStatus === "Order Received") {
+          history.push({
+            info: `Order indicated for transhipment by ${currentUser.displayName}`,
+            time: date.toLocaleString(),
+          });
+          const orderRef = doc(db, "orders", id);
+          setDoc(
+            orderRef,
+            { transferStation, tranship: true, transshipIn: true, history },
+            { merge: true }
+          );
+        } else {
+          uneditableOrders = true;
+        }
+      } else uneditableOrders = true;
     });
     uneditableOrders &&
-      alert("Some of the Selected Orders have already been assigned to trips");
+      alert(
+        "Some of the Selected Orders have already been assigned to trips or are local deliveries"
+      );
   };
   const unassignTrip = () => {
     let uneditableOrders = false;
@@ -344,6 +348,7 @@ const OutBound = () => {
               columns={modalColumns}
               rows={selectedOrders}
               autoHeight
+              setSelectedId={() => {}}
             />
           </div>
         </div>

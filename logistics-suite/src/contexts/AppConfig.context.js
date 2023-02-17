@@ -5,7 +5,6 @@ import axios from "axios";
 import bcrypt from "bcryptjs";
 
 import React, { createContext, useContext, useEffect, useState } from "react";
-import { rootUrl } from "../AppBrain";
 
 import { useUserContext } from "./CurrentUser.Context";
 
@@ -13,6 +12,8 @@ const AppConfigContext = createContext();
 
 export const AppConfigContextProvider = ({ children }) => {
   const { stationName } = useUserContext();
+  const [pricing, setPricing] = useState("");
+  const [pricingList, setPricingList] = useState("");
   const [states, setStates] = useState();
   const [statesList, setStatesList] = useState(["Loading"]);
   const [stations, setStations] = useState({});
@@ -39,18 +40,23 @@ export const AppConfigContextProvider = ({ children }) => {
   };
 
   useEffect(() => {
-    axios.get(`https://kind-waders-hare.cyclic.app/states`).then((data) => {
+    axios.get(`https://ls.webcouture.com.ng/pricing`).then((data) => {
+      setPricing(data.data);
+
+      setPricingList(Object.keys(data.data).map((key) => key));
+    });
+    axios.get(`https://ls.webcouture.com.ng/states`).then((data) => {
       setStates(data.data);
 
       setStatesList(Object.keys(data.data).map((key) => key));
     });
-    axios.get(`https://kind-waders-hare.cyclic.app/routes`).then((data) => {
+    axios.get(`https://ls.webcouture.com.ng/routes`).then((data) => {
       setRoutes(data.data);
       const list = Object.keys(data.data).map((key) => data.data[key].name);
       setRoutesList(list);
     });
 
-    axios.get(`https://kind-waders-hare.cyclic.app/stations`).then((data) => {
+    axios.get(`https://ls.webcouture.com.ng/stations`).then((data) => {
       const stationsByName = {};
       // eslint-disable-next-line array-callback-return
       Object.keys(data.data).map((key) => {
@@ -63,7 +69,7 @@ export const AppConfigContextProvider = ({ children }) => {
       setStationsList(list);
     });
     axios
-      .get(`https://kind-waders-hare.cyclic.app/users`, {
+      .get(`https://ls.webcouture.com.ng/users`, {
         params: { role: "Vehicle Attendant" },
       })
       .then((data) => {
@@ -72,7 +78,7 @@ export const AppConfigContextProvider = ({ children }) => {
       });
 
     axios
-      .get(`https://kind-waders-hare.cyclic.app/users`, {
+      .get(`https://ls.webcouture.com.ng/users`, {
         params: { role: "Driver" },
       })
       .then((data) => {
@@ -80,7 +86,7 @@ export const AppConfigContextProvider = ({ children }) => {
         setDriversList(Object.keys(data.data));
       });
     axios
-      .get(`https://kind-waders-hare.cyclic.app/vehicles`, {
+      .get(`https://ls.webcouture.com.ng/vehicles`, {
         params: { type: "interState" },
       })
       .then(({ data }) => {
@@ -91,7 +97,7 @@ export const AppConfigContextProvider = ({ children }) => {
   useEffect(() => {
     if (stationName) {
       axios
-        .get(`https://kind-waders-hare.cyclic.app/vehicles`, {
+        .get(`https://ls.webcouture.com.ng/vehicles`, {
           params: { type: "station", station: stationName },
         })
         .then(({ data }) => {
@@ -104,18 +110,14 @@ export const AppConfigContextProvider = ({ children }) => {
     <AppConfigContext.Provider
       value={{
         states,
-        setStates,
         statesList,
-        setStatesList,
         stations,
         stationsList,
         routes,
         routesList,
         attendantsList,
-        setAttendantsList,
         attendants,
         driversList,
-        setDriversList,
         drivers,
         interStateVehicles,
         stationVehicles,
@@ -123,6 +125,8 @@ export const AppConfigContextProvider = ({ children }) => {
         statVehList,
         getHashedPin,
         comparePin,
+        pricing,
+        pricingList,
       }}
     >
       {children}

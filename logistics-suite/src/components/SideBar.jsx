@@ -7,7 +7,9 @@ import { TooltipComponent } from "@syncfusion/ej2-react-popups";
 import Logo from "./assets/fll.png";
 import { links } from "../utils/links";
 import { useThemeContext } from "../contexts/themeContext";
+import { useUserContext } from "../contexts/CurrentUser.Context";
 const Sidebar = () => {
+  const { currentUser } = useUserContext();
   const { activeMenu, setActiveMenu, screenSize, currentColor } =
     useThemeContext();
   const handleCloseSideBar = () => {
@@ -45,29 +47,36 @@ const Sidebar = () => {
               </button>
             </TooltipComponent>
           </div>
-          <div className="mt-10">
-            {links.map((item) => (
-              <div key={item.title}>
-                <p className="text-gray-400 m-3 mt-4 uppercase">{item.title}</p>
-                {item.links.map((link) => (
-                  <NavLink
-                    key={link.name}
-                    to={link.link ? link.link : ""}
-                    onClick={handleCloseSideBar}
-                    style={({ isActive }) => ({
-                      backgroundColor: isActive ? currentColor : "",
-                    })}
-                    className={({ isActive }) =>
-                      isActive ? activeLink : normalLink
-                    }
-                  >
-                    {link.icon}
-                    <span className="capitalize">{link.name}</span>
-                  </NavLink>
-                ))}
-              </div>
-            ))}
-          </div>
+          {currentUser && currentUser !== "loading" && (
+            <div className="mt-10">
+              {links.map(
+                (item) =>
+                  item.authorized.includes(currentUser.adminRight) && (
+                    <div key={item.title}>
+                      <p className="text-gray-400 m-3 mt-4 uppercase">
+                        {item.title}
+                      </p>
+                      {item.links.map((link) => (
+                        <NavLink
+                          key={link.name}
+                          to={link.link ? link.link : ""}
+                          onClick={handleCloseSideBar}
+                          style={({ isActive }) => ({
+                            backgroundColor: isActive ? currentColor : "",
+                          })}
+                          className={({ isActive }) =>
+                            isActive ? activeLink : normalLink
+                          }
+                        >
+                          {link.icon}
+                          <span className="capitalize">{link.name}</span>
+                        </NavLink>
+                      ))}
+                    </div>
+                  )
+              )}
+            </div>
+          )}
         </>
       )}
     </div>

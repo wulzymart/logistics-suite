@@ -1,8 +1,6 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import {
   collection,
-  doc,
-  getDoc,
   onSnapshot,
   query,
   Timestamp,
@@ -112,7 +110,7 @@ const Trips = () => {
             // Object.assign(tempData, { [doc.data().id]: doc.data() });
             tempList.push(doc.data());
           });
-          console.log(tempList);
+
           setTrips(tempList);
         }
       );
@@ -120,10 +118,15 @@ const Trips = () => {
     getTrips();
   }, []);
   return (
-    <div>
+    <div className="w-full">
       <Header title="View Trips" />
       <div className="mt-8 h-[500px]">
-        <TableGrid columns={columns} rows={trips} />
+        <TableGrid
+          autoHeight
+          columns={columns}
+          rows={trips}
+          setSelectedId={() => {}}
+        />
       </div>
     </div>
   );

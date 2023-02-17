@@ -43,7 +43,7 @@ const RegisterEcommerce = () => {
   const { states, statesList, comparePin } = useAppConfigContext();
   const { currentUser } = useUserContext();
   const { openModal, closeModal } = useThemeContext();
-  const [Pin, setPin] = useState();
+  const [Pin, setPin] = useState("");
   const [paymentMode, setPaymentMode] = useState("");
   const [receiptInfo, setReceiptInfo] = useState("");
   const addEcommerce = async () => {
@@ -56,34 +56,47 @@ const RegisterEcommerce = () => {
       const querySnapshot = await getDocs(q);
       const customerRef = doc(db, "customers", customer.id);
       if (querySnapshot.empty) {
-        setDoc(customerRef, {
-          ...customer,
-          dateCreated: serverTimestamp(),
-          history: [
-            {
-              info: `Customer created by ${currentUser.displayName}`,
-              time: new Date().toLocaleString(),
-            },
-          ],
-        });
-        closeModal("pin-modal");
-        closeModal("newEcommerce-modal");
-        dispatch(resetCustomer());
         const paymentId = idGenerator(10);
-
         setDoc(doc(db, "income", paymentId), {
           id: paymentId,
           customerId: customer.id,
           customerName: customer.firstName + " " + customer.lastName,
           businessName: customer.businessName,
-          amount: customer.WalletBalance,
+          amount: +customer.walletBalance,
           purpose: "Wallet Top-up",
           paymentMode,
-          receiptInfo: customer.receiptInfo,
+          receiptInfo,
           dateMade: serverTimestamp(),
           processedBy: currentUser.displayName,
           station: currentUser.station,
-        });
+        })
+          .then(() => {
+            setDoc(customerRef, {
+              ...customer,
+              dateCreated: serverTimestamp(),
+              history: [
+                {
+                  info: `Customer created by ${currentUser.displayName}`,
+                  time: new Date().toLocaleString(),
+                },
+              ],
+            })
+              .then(() => {
+                closeModal("pin-modal");
+                closeModal("newEcommerce-modal");
+                dispatch(resetCustomer());
+                alert("customer successfully created");
+              })
+              .catch(
+                (err) =>
+                  err &&
+                  alert("error creating customer, Payment has been registered")
+              );
+          })
+          .catch(
+            (err) =>
+              err && alert("error saving payment, customer not registered")
+          );
       } else alert("Customer with phone number exists");
     } else alert("incorrect Pin");
   };
@@ -91,7 +104,7 @@ const RegisterEcommerce = () => {
   return (
     <div>
       <h1 className="text-center text-3xl font-bold mb-8">
-        Create New Ecommerce Customer
+        Add New E-commerce Customer
       </h1>
       <p className="text-xl text-red-800 mb-8">
         Please fill in the appropriate information
@@ -104,7 +117,7 @@ const RegisterEcommerce = () => {
             value={customer.firstName}
             handleChange={(e) => {
               dispatch(setCustomerFirstName(e.target.value));
-              dispatch(setCustomerType("ecommerce"));
+              dispatch(setCustomerType("E-commerce"));
             }}
           />
         </div>
@@ -199,7 +212,7 @@ const RegisterEcommerce = () => {
           <Input
             type="number"
             value={customer.walletBalance}
-            handleChange={(e) => dispatch(setWalletBalance(e.target.value))}
+            handleChange={(e) => dispatch(setWalletBalance(+e.target.value))}
           />
         </div>
       </div>
@@ -211,7 +224,7 @@ const RegisterEcommerce = () => {
       >
         Acknowledge Payment and Save
       </CustomButton>
-      <Modal id="newEcommerce-modal" title="Ecommerce Customer Summary">
+      <Modal id="newEcommerce-modal" title="E-commerce Customer Summary">
         <p className="italic font-medium text-red-600 mb-6">
           Kindly Review customer information and enter payment details
         </p>

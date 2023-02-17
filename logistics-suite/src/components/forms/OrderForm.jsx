@@ -9,7 +9,6 @@ import Textarea from "../textarea/textarea.jsx";
 import { useSelector, useDispatch } from "react-redux";
 import {
   setIntraCity,
-  setIntraState,
   setDeliveryType,
   setDeliveryService,
   setOriginStation,
@@ -18,10 +17,8 @@ import {
   setDestinationStationId,
   setReceiverFirstName,
   setReceiverLastName,
-  setReceiverBusinessName,
   setReceiverPhone,
   setReceiverState,
-  setReceiverLga,
   setReceiverStreetAddress,
   setItemShipment,
   setItemDescription,
@@ -49,21 +46,13 @@ const OrderForm = () => {
   const { currentUser } = useUserContext();
   const [originStateCode, setOriginStateCode] = useState("");
   const [destinationStateCode, setDestinationStateCode] = useState("");
-
   const dispatch = useDispatch();
   const customer = useSelector((state) => state.customer);
   const order = useSelector((state) => state.order);
-  const { newCustomer, setNewCustomer } = useNewWaybillContext();
-  const {
-    states,
-    statesList,
-    stations,
-
-    stationsList,
-  } = useAppConfigContext();
-  const shipmentCartegoryOptions = Object.keys(appBrain.shipmentCartegory).map(
-    (key) => key
-  );
+  const { newCustomer } = useNewWaybillContext();
+  const { states, statesList, stations, pricing, pricingList } =
+    useAppConfigContext();
+  const [stationsList, setStationsList] = useState([""]);
   const setId = () => {
     dispatch(
       setOrderId(
@@ -73,8 +62,10 @@ const OrderForm = () => {
       )
     );
   };
+  const Reduction = order.intraCity === "Yes" ? 0.6 : 1;
   return (
-    newCustomer && (
+    newCustomer &&
+    pricing && (
       <div>
         <p className="font-bold text-2xl text-center  mb-20">
           WAYBILL INFORMATION
@@ -91,41 +82,44 @@ const OrderForm = () => {
             <div className=" flex flex-col   gap-8">
               <div className="w-full flex flex-col md:flex-row gap-8">
                 <div className="w-full flex flex-col items-center">
-                  <p className=" mb-5">Same State Delivery*?</p>
+                  <p className=" mb-5">Local Delivery*?</p>
                   <Select
-                    name={"intraState"}
-                    value={order.intraState}
+                    name={"intraCity"}
+                    value={order.intraCity}
+                    required
                     options={appBrain.interCityOptions}
                     handleChange={(e) => {
-                      dispatch(setIntraState(e.target.value));
+                      dispatch(setIntraCity(e.target.value));
+                      dispatch(setOriginStation(currentUser.station));
+                      dispatch(
+                        setOriginStationId(stations[currentUser.station].id)
+                      );
+                      setOriginStateCode(
+                        stations[currentUser.station].shortCode
+                      );
                     }}
                     children={"Select one"}
                   />
                 </div>
-                {order.intraState === "Yes" && (
-                  <div className="w-full flex flex-col items-center">
-                    <p className=" mb-5">Same City Delivery*?</p>
-                    <Select
-                      name={"intraCity"}
-                      value={order.intraCity}
-                      options={appBrain.interCityOptions}
-                      handleChange={(e) => {
-                        dispatch(setIntraCity(e.target.value));
-                      }}
-                      children={"Select one"}
-                    />
-                  </div>
-                )}
+
                 {order.intraCity === "No" && (
                   <div className="w-full flex flex-col items-center">
                     <p className=" mb-5">Delivery type*</p>
                     <Select
                       name={"deliveryType"}
+                      required
                       value={order.deliverType}
                       options={appBrain.deliveryTypeOptions}
-                      handleChange={(e) =>
-                        dispatch(setDeliveryType(e.target.value))
-                      }
+                      handleChange={(e) => {
+                        dispatch(setDeliveryType(e.target.value));
+                        dispatch(setOriginStation(currentUser.station));
+                        dispatch(
+                          setOriginStationId(stations[currentUser.station].id)
+                        );
+                        setOriginStateCode(
+                          stations[currentUser.station].shortCode
+                        );
+                      }}
                       children={"Type of Delivery"}
                     />
                   </div>
@@ -136,34 +130,25 @@ const OrderForm = () => {
                     <Select
                       name={"serviceType"}
                       value={order.deliverService}
+                      required
                       options={appBrain.serviceTypeOptions}
-                      handleChange={(e) =>
-                        dispatch(setDeliveryService(e.target.value))
-                      }
+                      handleChange={(e) => {
+                        dispatch(setDeliveryService(e.target.value));
+                        dispatch(setOriginStation(currentUser.station));
+                        dispatch(
+                          setOriginStationId(stations[currentUser.station].id)
+                        );
+                        setOriginStateCode(
+                          stations[currentUser.station].shortCode
+                        );
+                      }}
                       children={"Delivery Service"}
                     />
                   </div>
                 )}
                 <div className="w-full flex flex-col items-center">
                   <p className=" mb-5 text-center">Origin Station*</p>
-                  <Select
-                    name={"originStation"}
-                    value={order.originStation}
-                    options={stationsList}
-                    handleChange={(e) => {
-                      const value = e.target.value;
-                      dispatch(setOriginStation(value));
-                      value
-                        ? dispatch(setOriginStationId(stations[value].id))
-                        : dispatch(setOriginStationId(""));
-                      value
-                        ? setOriginStateCode(
-                            states[stations[value].address.state].code
-                          )
-                        : setOriginStateCode("");
-                    }}
-                    children={"Origin Station"}
-                  />
+                  <p>{order.originStation}</p>
                 </div>
               </div>
             </div>
@@ -188,6 +173,7 @@ const OrderForm = () => {
               <Input
                 type={"text"}
                 placeholder={"First Name*"}
+                required
                 value={order.receiver.firstName}
                 handleChange={(e) =>
                   dispatch(setReceiverFirstName(e.target.value))
@@ -196,26 +182,20 @@ const OrderForm = () => {
               <Input
                 type={"text"}
                 placeholder={"Last Name*"}
+                required
                 value={order.receiver.lastName}
                 handleChange={(e) =>
                   dispatch(setReceiverLastName(e.target.value))
                 }
               />
-              <Input
-                type={"text"}
-                name={"receiverBusinessName"}
-                placeholder={"Business Name"}
-                value={order.receiver.businessName}
-                handleChange={(e) =>
-                  dispatch(setReceiverBusinessName(e.target.value))
-                }
-              />
+
               <PhoneInput
                 placeholder="Phone Number*"
                 country={"ng"}
                 onlyCountries={["ng"]}
                 prefix="+"
                 value={order.receiver.phoneNumber}
+                required
                 onChange={(phone) => {
                   phone = "+" + phone;
                   dispatch(setReceiverPhone(phone));
@@ -232,27 +212,23 @@ const OrderForm = () => {
                 <Select
                   name={"receiverState"}
                   options={statesList}
+                  required
                   value={order.receiver.address.state}
-                  handleChange={(e) =>
-                    dispatch(setReceiverState(e.target.value))
-                  }
+                  handleChange={(e) => {
+                    dispatch(setReceiverState(e.target.value));
+                    Object.keys(states[e.target.value].stations).length &&
+                      setStationsList(
+                        Object.keys(states[e.target.value].stations)
+                      );
+                  }}
                   children={"Select State"}
                 />
-                <Select
-                  name={"receiverLga"}
-                  value={order.receiver.address.lga}
-                  options={
-                    order.receiver.address.state
-                      ? states[order.receiver.address.state].lgas
-                      : []
-                  }
-                  handleChange={(e) => dispatch(setReceiverLga(e.target.value))}
-                  children={"Select LGA"}
-                />
+
                 {order.intraCity === "No" && (
                   <Select
                     name={"destinationStation"}
                     value={order.destinationStation}
+                    required
                     options={stationsList}
                     handleChange={(e) => {
                       const value = e.target.value;
@@ -261,18 +237,14 @@ const OrderForm = () => {
                         ? dispatch(setDestinationStationId(stations[value].id))
                         : dispatch(setDestinationStationId(""));
                       value
-                        ? setDestinationStateCode(
-                            states[stations[value].address.state].code
-                          )
+                        ? setDestinationStateCode(stations[value].shortCode)
                         : setDestinationStateCode("");
                     }}
                     children={"Destination Station"}
                   />
                 )}
               </div>
-              <Input
-                type={"text"}
-                name={"receiverStreetAddress"}
+              <Textarea
                 placeholder={"Street Address"}
                 value={order.receiver.address.streetAddress}
                 handleChange={(e) =>
@@ -304,6 +276,7 @@ const OrderForm = () => {
                       placeholder={
                         "Please write a short description about the item"
                       }
+                      required
                       value={order.item.description}
                       handleChange={(e) =>
                         dispatch(setItemDescription(e.target.value))
@@ -314,35 +287,48 @@ const OrderForm = () => {
                   <div className="w-full flex flex-col items-center gap-8">
                     <div className="w-full flex flex-col md:flex-row item-center gap-8">
                       <Select
-                        options={shipmentCartegoryOptions}
+                        options={pricingList}
+                        required
                         children={"Select Cartegory*"}
                         value={order.item.cartegory}
                         name={"shipmentCartegory"}
                         handleChange={(e) => {
                           const shipmentCartegory = e.target.value;
                           dispatch(setItemShipment(shipmentCartegory));
-                          dispatch(
-                            setItemWeight(
-                              shipmentCartegory === "Document" ? 1 : ""
-                            )
-                          );
-                          dispatch(
-                            setFreightPrice(
-                              shipmentCartegory === "Document" ? 1500 : 0
-                            )
-                          );
-                          dispatch(
-                            setSubtotal(
-                              shipmentCartegory === "Document" ? 1500 : 0
-                            )
-                          );
-                          dispatch(
-                            setVAT(
-                              shipmentCartegory === "Document"
-                                ? 1500 * appBrain.vat
-                                : 0
-                            )
-                          );
+                          if (!shipmentCartegory) {
+                            dispatch(setItemWeight(0));
+
+                            dispatch(setFreightPrice(0));
+
+                            dispatch(setSubtotal(0));
+
+                            dispatch(setVAT(0));
+                          }
+
+                          pricing[shipmentCartegory]?.weight &&
+                            dispatch(
+                              setItemWeight(pricing[shipmentCartegory].weight)
+                            );
+                          pricing[shipmentCartegory]?.price &&
+                            dispatch(
+                              setFreightPrice(
+                                pricing[shipmentCartegory].price * Reduction
+                              )
+                            );
+                          pricing[shipmentCartegory]?.price &&
+                            dispatch(
+                              setSubtotal(
+                                pricing[shipmentCartegory].price * Reduction
+                              )
+                            );
+                          pricing[shipmentCartegory]?.price &&
+                            dispatch(
+                              setVAT(
+                                appBrain.vat *
+                                  pricing[shipmentCartegory].price *
+                                  Reduction
+                              )
+                            );
                         }}
                       />
 
@@ -359,7 +345,7 @@ const OrderForm = () => {
                     <div className="w-full flex gap-8 items-center">
                       <div className="w-full flex gap-3 items-center">
                         <Input
-                          value={order.item.value}
+                          value={order.item.value ? order.item.value : ""}
                           handleChange={(e) => {
                             dispatch(setItemValue(e.target.value));
                             dispatch(
@@ -375,16 +361,32 @@ const OrderForm = () => {
                       <div className="w-full flex items-center gap-3">
                         <Input
                           type={"number"}
-                          value={order.item.weight}
+                          disabled={!order.item.cartegory}
+                          required
+                          value={order.item.weight ? order.item.weight : ""}
                           handleChange={(e) => {
-                            const subtotal =
-                              order.item.shipmentCartegory !== "Document" &&
-                              e.target.value * 200;
                             dispatch(setItemWeight(e.target.value));
-                            dispatch(setFreightPrice(subtotal));
-                            dispatch(setSubtotal(subtotal));
-                            dispatch(setVAT(subtotal * appBrain.vat));
+                            if (pricing[order.item.cartegory].ppw) {
+                              const subtotal =
+                                e.target.value *
+                                pricing[order.item.cartegory].ppw *
+                                Reduction;
+
+                              dispatch(setFreightPrice(subtotal));
+                              dispatch(setSubtotal(subtotal));
+                              dispatch(setVAT(subtotal * appBrain.vat));
+                            }
                           }}
+                          min={
+                            order.item.cartegory
+                              ? pricing[order.item.cartegory].min
+                              : 0
+                          }
+                          max={
+                            order.item.cartegory
+                              ? pricing[order.item.cartegory].max
+                              : 10000000000
+                          }
                           placeholder={"Item Weight*"}
                         />
                         <span className="text-red-800">KG</span>
@@ -394,7 +396,7 @@ const OrderForm = () => {
                       <Input
                         type={"number"}
                         min={1}
-                        value={order.item.quantity}
+                        value={order.item.quantity ? order.item.quantity : ""}
                         handleChange={(e) =>
                           dispatch(setItemQuantity(e.target.value))
                         }
@@ -481,16 +483,23 @@ const OrderForm = () => {
               See all calculated charges before proceeding to billing;
             </p>
           </div>
-          <div className="w-full mt-8 flex flex-col md:flex-row justify-evenly">
+          <div className="w-full mt-8 flex flex-col md:flex-row justify-evenly flex-wrap">
             <p className=" font-medium text-xl">
               Subtotal: <span>{order.subtotal} NGN</span>
             </p>
+            {customer.customerType === "E-commerce" && (
+              <p className=" font-medium text-xl">
+                E-commerce Discount: <span>{0.4 * order.subtotal} NGN</span>
+              </p>
+            )}
             <p className=" font-medium text-xl">
               VAT: <span>{order.VAT} NGN</span>
             </p>
-            <p className=" font-medium text-xl">
-              Insurance: <span>{order.insurance} NGN</span>
-            </p>
+            {order.insurance && (
+              <p className=" font-medium text-xl">
+                Insurance: <span>{order.insurance} NGN</span>
+              </p>
+            )}
             <p className=" font-medium text-xl">
               Total: <span>{order.total} NGN</span>
             </p>
@@ -500,7 +509,13 @@ const OrderForm = () => {
               handleClick={() => {
                 dispatch(setProcessedBy(currentUser.id));
                 dispatch(
-                  setTotal(order.subtotal + order.VAT + order.insurance)
+                  setTotal(
+                    (customer.customerType === "E-commerce"
+                      ? 0.6 * order.subtotal
+                      : order.subtotal) +
+                      order.VAT +
+                      order.insurance
+                  )
                 );
 
                 setId();

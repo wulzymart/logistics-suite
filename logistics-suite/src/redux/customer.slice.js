@@ -2,19 +2,14 @@ import { createSlice } from "@reduxjs/toolkit";
 
 const initialState = {
   id: "",
-  customerType: "individual",
+  customerType: "Individual",
   firstName: "",
   lastName: "",
   businessName: "",
-  sex: "",
-  dateOfBirth: "",
-  birthMonth: "",
-  birthDate: "",
   phoneNumber: "",
   email: "",
   address: {
     state: "",
-    lga: "",
     streetAddress: "",
   },
 };
@@ -45,28 +40,26 @@ export const customerSlice = createSlice({
     setCustomerPhone(state, action) {
       state.phoneNumber = action.payload;
     },
-    setCustomerSex(state, action) {
-      state.sex = action.payload;
-    },
-    setCustomerDOB(state, action) {
-      state.dateOfBirth = new Date(action.payload).toISOString();
-      state.birthMonth = new Intl.DateTimeFormat("en-US", {
-        month: "long",
-      }).format(new Date(action.payload));
-      state.birthDate = new Date(action.payload).getDate();
-    },
+    // setCustomerSex(state, action) {
+    //   state.sex = action.payload;
+    // },
+    // setCustomerDOB(state, action) {
+    //   state.dateOfBirth = new Date(action.payload).toISOString();
+    //   state.birthMonth = new Intl.DateTimeFormat("en-US", {
+    //     month: "long",
+    //   }).format(new Date(action.payload));
+    //   state.birthDate = new Date(action.payload).getDate();
+    // },
     setCustomerState(state, action) {
       state.address.state = action.payload;
     },
-    setCustomerLga(state, action) {
-      state.address.lga = action.payload;
-    },
+
     setCustomerStreetAddress(state, action) {
       state.address.streetAddress = action.payload;
     },
     getCustomerFromDB: (state, action) => action.payload,
     setWalletBalance(state, action) {
-      state.walletBalance = action.payload;
+      state.walletBalance = +action.payload;
     },
   },
 });

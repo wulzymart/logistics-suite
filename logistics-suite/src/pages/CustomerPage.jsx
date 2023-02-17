@@ -3,10 +3,10 @@ import {
   collection,
   doc,
   endBefore,
-  getDoc,
   getDocs,
   limit,
   limitToLast,
+  onSnapshot,
   orderBy,
   query,
   serverTimestamp,
@@ -39,7 +39,7 @@ const CustomerPage = () => {
 
   const { states, statesList, comparePin } = useAppConfigContext();
   const { openModal, closeModal } = useThemeContext();
-  const [pin, setPin] = useState();
+  const [pin, setPin] = useState("");
   const [action, setAction] = useState("");
   const [rows, setRows] = useState([]);
   const [customer, setCustomer] = useState();
@@ -156,7 +156,13 @@ const CustomerPage = () => {
       width: 150,
     },
   ];
+
   const edit = () => {
+    const history = customer.history;
+    history.push({
+      info: `customer details editied by ${currentUser.displayName}`,
+      time: today,
+    });
     setDoc(
       customerRef,
       {
@@ -166,41 +172,42 @@ const CustomerPage = () => {
         phoneNumber,
         email,
         address: { state, lga, streetAddress },
-        history: {
-          info: `customer details editied by ${currentUser.displayName}`,
-          time: today,
-        },
+        history,
       },
       { merge: true }
     );
     closeModal("edit");
   };
   const upgrade = () => {
+    const history = customer.history;
+    history.push({
+      info: `customer upgraded to E-commerce by ${currentUser.displayName}`,
+      time: today,
+    });
     setDoc(
       customerRef,
       {
-        customerType: "ecommerce",
+        customerType: "E-commerce",
         businessName,
-        history: {
-          info: `customer upgraded to ecommerce by ${currentUser.displayName}`,
-          time: today,
-        },
+        history,
       },
       { merge: true }
     );
     closeModal("upgrade");
   };
   const topUp = () => {
-    let walletBalance = customer.walletBalance;
-    walletBalance = walletBalance + amount;
+    let walletBalance = customer.walletBalance ? customer.walletBalance : 0;
+    walletBalance = +walletBalance + +amount;
+    const history = customer.history;
+    history.push({
+      info: `${amount}NGN was added to wallet by ${currentUser.displayName}`,
+      time: today,
+    });
     setDoc(
       customerRef,
       {
         walletBalance,
-        history: {
-          info: `${amount}NGN was added to wallet by ${currentUser.displayName}`,
-          time: today,
-        },
+        history,
       },
       { merge: true }
     );
@@ -211,10 +218,12 @@ const CustomerPage = () => {
       customerName: firstName + " " + lastName,
       businessName,
       amount,
-      paymentType: "Wallet Top-up",
+      purpose: "Wallet Top-up",
       paymentMode,
       receiptInfo,
       dateMade: serverTimestamp(),
+      processedBy: currentUser.displayName,
+      station: currentUser.station,
     });
   };
   const handleSubmit = () => {
@@ -227,8 +236,7 @@ const CustomerPage = () => {
     } else alert("Wrong Pin");
   };
   useEffect(() => {
-    const getCustomer = async () => {
-      const snapshot = await getDoc(customerRef);
+    const unsubsCribeCustomer = onSnapshot(customerRef, (snapshot) => {
       if (snapshot.exists()) {
         const data = snapshot.data();
         setCustomer(data);
@@ -240,10 +248,11 @@ const CustomerPage = () => {
         setState(data.address.state);
         setLga(data.address.lga);
         setStreetAddress(data.address.streetAddress);
-      }
-    };
-    getCustomer();
-    getQuery(queryOrders);
+        getQuery(queryOrders);
+      } else alert("not found");
+    });
+
+    return unsubsCribeCustomer;
   }, []);
   return (
     <div>
@@ -282,7 +291,7 @@ const CustomerPage = () => {
               </p>
             </div>
             <div className="min-w-52 flex flex-col gap-4">
-              {customer.customerType === "ecommerce" && (
+              {customer.customerType === "E-commerce" && (
                 <p className="flex flex-col  gap-2 mb-2">
                   <span className="font-bold">Wallet Balance:</span>
                   <span>{customer.walletBalance} NGN</span>
@@ -292,24 +301,6 @@ const CustomerPage = () => {
           </div>
 
           <div className="flex flex-col md:flex-row  gap-4 ">
-            <div className="flex flex-col bg-blue-400  w-full p-8 rounded-lg mb-4 gap-y-2">
-              <p className="">
-                <span>Gender: </span>
-                <span>{customer.sex}</span>
-              </p>
-              <p className="">
-                <span>Date of Birth: </span>
-                <span>
-                  {new Date(customer.dateOfBirth).toDateString().split(" ")[1] +
-                    " " +
-                    new Date(customer.dateOfBirth)
-                      .toDateString()
-                      .split(" ")[2] +
-                    " " +
-                    new Date(customer.dateOfBirth).toDateString().split(" ")[3]}
-                </span>
-              </p>
-            </div>
             <div className="flex flex-col bg-blue-400  w-full p-8 rounded-lg mb-4 gap-y-2">
               <p className="">
                 <span>Phone Number: </span>
@@ -332,7 +323,7 @@ const CustomerPage = () => {
             </div>
           </div>
           <div className="flex gap-4 flex-col md:flex-row">
-            {customer.customerType === "ecommerce" ? (
+            {customer.customerType === "E-commerce" ? (
               <div className="flex gap-4 flex-col md:flex-row">
                 <CustomButton
                   handleClick={() => {
@@ -383,9 +374,15 @@ const CustomerPage = () => {
               </CustomButton>
             )}
           </div>
-          <div className="mt-4">
+          <div className="mt-4 w-full">
             <h2 className="text-xl font-body mb-4">Recent Orders</h2>
-            <TableGrid columns={columns} rows={rows} autoHeight hideFooter />
+            <TableGrid
+              columns={columns}
+              rows={rows}
+              autoHeight
+              hideFooter
+              setSelectedId={() => {}}
+            />
             <div className="bg-blue-100 p-4">
               <div className="flex gap-6 justify-end pr-8">
                 <button
@@ -487,7 +484,7 @@ const CustomerPage = () => {
           <Modal id="upgrade">
             <div className="flex flex-col gap-8">
               <p className="text-lg font-bold">
-                Upgrade Customer type to Ecommerce
+                Upgrade Customer type to E-commerce
               </p>
               <div className="flex gap-2 items-center">
                 <p>Business Name:</p>
@@ -514,7 +511,7 @@ const CustomerPage = () => {
                 <Input
                   type="number"
                   value={amount}
-                  handleChange={(e) => setAmount(e.target.value)}
+                  handleChange={(e) => setAmount(+e.target.value)}
                 />
               </div>
               <div className="flex gap-2 items-center">

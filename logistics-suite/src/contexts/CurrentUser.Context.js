@@ -3,13 +3,12 @@ import axios from "axios";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 
 import React, { createContext, useContext, useEffect, useState } from "react";
-import { rootUrl } from "../AppBrain";
+
 import { app } from "../firebase/firebase";
 
 const UserContext = createContext();
 
 export const UserContextProvider = ({ children }) => {
-  console.log("loaded");
   const [currentUser, setCurrentUser] = useState("loading");
   const [stationName, setStationName] = useState("");
   const [stationId, setStationId] = useState("");
@@ -21,14 +20,13 @@ export const UserContextProvider = ({ children }) => {
       if (user) {
         const uid = user.uid;
         await axios
-          .get(`https://kind-waders-hare.cyclic.app/users/?uid=${uid}`)
+          .get(`https://ls.webcouture.com.ng/users/?uid=${uid}`)
           .then((data) => {
-            console.log(data.data);
             const loggedInUser = data.data;
             setCurrentUser(loggedInUser);
             setStationName(loggedInUser.station);
             setStationId(loggedInUser.stationId);
-            setStaffState(loggedInUser.address.state);
+            setStaffState(loggedInUser?.address?.state);
           });
       } else {
         setCurrentUser(null);

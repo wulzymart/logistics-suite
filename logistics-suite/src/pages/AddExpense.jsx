@@ -27,7 +27,7 @@ const AddExpense = () => {
   const purposesList = Purposes.map((purpose) => purpose.purpose);
   const { currentUser } = useUserContext();
   const [purpose, setPurpose] = useState("");
-  const [amount, setAmount] = useState("");
+  const [amount, setAmount] = useState(0);
   const [description, setDescription] = useState("");
   const approved = "";
   const [orderId, setOrderId] = useState("");
@@ -55,7 +55,7 @@ const AddExpense = () => {
       closeModal("pin-modal");
       closeModal("expense-modal");
       setPurpose("");
-      setAmount("");
+      setAmount(0);
       setDescription("");
       setOrderId("");
       setTripId("");
@@ -80,7 +80,7 @@ const AddExpense = () => {
           <Input
             type="number"
             value={amount}
-            handleChange={(e) => setAmount(e.target.value)}
+            handleChange={(e) => setAmount(+e.target.value)}
             max={
               purpose
                 ? Purposes[purposesList.indexOf(purpose)].max

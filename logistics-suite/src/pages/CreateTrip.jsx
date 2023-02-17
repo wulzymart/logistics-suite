@@ -57,7 +57,9 @@ const CreateTrip = () => {
         driverName: driver,
         driverPhone: drivers[driver]?.phoneNumber,
         attendantName: attendant,
-        attendantPhone: attendants[attendant]?.phoneNumber,
+        attendantPhone: attendants[attendant]?.phoneNumber
+          ? attendants[attendant]?.phoneNumber
+          : "",
       };
       const tripRef = doc(db, "trips", trip.id);
       try {
@@ -104,12 +106,12 @@ const CreateTrip = () => {
         <div className="w-full">
           <p>Trip Type</p>
           <Select
-            options={["Station-Station", "Home Delivery"]}
+            options={["Station-Station", "Local Trip"]}
             value={tripType}
             handleChange={(e) => {
               const value = e.target.value;
               setTripType(value);
-              if (value === "Home Delivery") {
+              if (value === "Local Trip") {
                 setRoute("");
                 setDestinationStation("");
               }
@@ -117,15 +119,17 @@ const CreateTrip = () => {
             children="Select One"
           />
         </div>
-        <div className="w-full ">
-          <p>Service Type</p>
-          <Select
-            options={["Regular", "Express"]}
-            value={serviceType}
-            handleChange={(e) => setServiceType(e.target.value)}
-            children="Select One"
-          />
-        </div>
+        {tripType !== "Local Trip" && (
+          <div className="w-full ">
+            <p>Service Type</p>
+            <Select
+              options={["Regular", "Express"]}
+              value={serviceType}
+              handleChange={(e) => setServiceType(e.target.value)}
+              children="Select One"
+            />
+          </div>
+        )}
       </div>
       <div className="flex flex-col md:flex-row gap-8 mb-8">
         <div className="w-full">
@@ -137,7 +141,7 @@ const CreateTrip = () => {
             children="Select One"
           />
         </div>
-        {tripType !== "Home Delivery" && (
+        {tripType !== "Local Trip" && (
           <div className="w-full">
             <p className="">Desination Station</p>
             <Select
@@ -148,7 +152,7 @@ const CreateTrip = () => {
             />
           </div>
         )}
-        {tripType !== "Home Delivery" && (
+        {tripType !== "Local Trip" && (
           <div className="w-full">
             <p className="">Select Route</p>
             <Select
@@ -166,11 +170,11 @@ const CreateTrip = () => {
           <p>Select Vehicle</p>
           <Select
             options={
-              tripType === "Home Delivery"
+              tripType === "Local Trip"
                 ? statVehList
                 : tripType === "Station-Station"
                 ? intVehList
-                : ["Select Trip Type !!"]
+                : [""]
             }
             value={vehicle}
             handleChange={(e) => setVehicle(e.target.value)}
@@ -199,21 +203,16 @@ const CreateTrip = () => {
       <div className="w-full">
         <CustomButton
           handleClick={() => {
-            if (
-              tripName &&
-              serviceType &&
-              tripType &&
-              originStation &&
-              driver
-            ) {
+            if ((tripName && tripType && originStation && driver, vehicle)) {
               if (
                 tripType === "Station-Station" &&
                 destinationStation &&
+                serviceType &&
                 route &&
                 attendant
               ) {
                 openModal("create-trip-modal");
-              } else if (tripType === "Home Delivery") {
+              } else if (tripType === "Local Trip") {
                 openModal("create-trip-modal");
               } else alert("Enter all necessary information");
             } else alert("Enter all necessary information");

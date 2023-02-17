@@ -11,9 +11,7 @@ export function idGenerator(n) {
   return id;
 }
 export const rootUrl =
-  process.env.NODE_ENV === "production"
-    ? "https://kind-waders-hare.cyclic.app"
-    : "";
+  process.env.NODE_ENV === "production" ? "https://ls.webcouture.com.ng" : "";
 export const themeColors = [
   {
     name: "blue-theme",

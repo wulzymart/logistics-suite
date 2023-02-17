@@ -23,6 +23,7 @@ import { IoIosBusiness } from "react-icons/io";
 export const links = [
   {
     title: "Dashboard",
+    authorized: ["Normal User", "Admin", "Super Admin"],
     links: [
       {
         name: "Summary",
@@ -39,6 +40,7 @@ export const links = [
 
   {
     title: "Waybills",
+    authorized: ["Normal User", "Admin", "Super Admin"],
     links: [
       {
         name: "New Waybill",
@@ -63,17 +65,17 @@ export const links = [
   },
   {
     title: "Operations",
+    authorized: ["Normal User", "Admin", "Super Admin"],
     links: [
-      {
-        name: "Create New Trip",
-        icon: <GiWindyStripes />,
-        link: "/create-trip",
-      },
-
       {
         name: "Assign Trip",
         icon: <BiTrip />,
         link: "/assign-trip",
+      },
+      {
+        name: "Assign Local Trip",
+        icon: <BiTrip />,
+        link: "assign-local-trip",
       },
       {
         name: "Trips",
@@ -82,14 +84,10 @@ export const links = [
       },
       {
         name: "New Expense",
-        icon: <GiMoneyStack />,
+        icon: <GiExpense />,
         link: "/new-expense",
       },
-      {
-        name: "Station Expenses",
-        icon: <GiMoneyStack />,
-        link: "/expenses",
-      },
+
       {
         name: "Customers",
         icon: <HiUserGroup />,
@@ -99,64 +97,89 @@ export const links = [
   },
   {
     title: "Admin",
-    links: [
-      // {
-      //   name: "Station Summary",
-      //   icon: <HiOfficeBuilding />,
-      // },
-      // {
-      //   name: "Account Summary",
-      //   icon: <MdAccountBalance />,
-      // },
-      // {
-      //   name: "Expense Summary",
-      //   icon: <GiExpense />,
-      // },
-    ],
-  },
-  {
-    title: "Director",
+    authorized: ["Admin", "Super Admin"],
     links: [
       {
-        name: "Register Ecommerce",
+        name: "Create New Trip",
+        icon: <GiWindyStripes />,
+        link: "/create-trip",
+      },
+      {
+        name: "Station Expenses",
+        icon: <GiMoneyStack />,
+        link: "/admin/expenses",
+      },
+      {
+        name: "Register E-commerce",
         icon: <MdAddBusiness />,
         link: "/admin/new-ecommerce-customer",
-      },
-      {
-        name: "Manage Expenses",
-        icon: <GiMoneyStack />,
-        link: "/admin/manage-expenses",
-      },
-      {
-        name: "Add New Staff",
-        icon: <FaUserPlus />,
-        link: "/admin/staff-registration",
       },
       {
         name: "Staff",
         icon: <FaUsers />,
         link: "/admin/staff",
       },
-
       {
         name: "Manage Stations",
         icon: <IoIosBusiness />,
         link: "/admin/stations",
       },
+      // {
+      //   name: "Station Summary",
+      //   icon: <HiOfficeBuilding />,
+      // },
+    ],
+  },
+  {
+    title: "Accounts",
+    authorized: ["Super Admin"],
+    links: [
+      {
+        name: "Manage Expenses",
+        icon: <GiMoneyStack />,
+        link: "/super-admin/manage-expenses",
+      },
+      {
+        name: "Inflow",
+        icon: <MdAccountBalance />,
+        link: "/suoer-admin/money-in",
+      },
+      {
+        name: "Outflow",
+        icon: <MdAccountBalance />,
+        link: "/super-admin/money-out",
+      },
+    ],
+  },
+  {
+    title: "Director",
+    authorized: ["Super Admin"],
+    links: [
+      {
+        name: "Add New Staff",
+        icon: <FaUserPlus />,
+        link: "/super-admin/staff-registration",
+      },
+
       {
         name: "Add Station",
         icon: <IoIosBusiness />,
-        link: "/admin/add-stations",
+        link: "/super-admin/add-stations",
       },
       {
         name: "Add New Vehicle",
         icon: <FaShuttleVan />,
-        link: "/admin/add-vehicle",
+        link: "/super-admin/add-vehicle",
       },
       {
         name: "Create New Route",
         icon: <MdAltRoute />,
-        link: "/admin/create-route",
+        link: "/super-admin/create-route",
+      },
+      {
+        name: "Manage Pricing",
+        icon: <FaShuttleVan />,
+        link: "/super-admin/manage-pricing",
       },
     ],
   },

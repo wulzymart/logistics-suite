@@ -195,7 +195,12 @@ const ManageExpenses = () => {
         <div>
           <p className="mb-8">Please confirm selected expenses for approval</p>
           <div className="w-full mb-8">
-            <TableGrid rows={selectedExpenses} columns={columns} autoHeight />
+            <TableGrid
+              rows={selectedExpenses}
+              columns={columns}
+              autoHeight
+              setSelectedId={() => {}}
+            />
           </div>
           <CustomButton handleClick={() => openModal("pin-modal")}>
             Proceed

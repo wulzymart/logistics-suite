@@ -57,6 +57,8 @@ const OrderSummaryPage = () => {
   const dispatch = useDispatch();
 
   const today = new Date();
+  const customerRef = doc(db, "customers", customer.id);
+
   const createOrder = () => {
     const orderRef = doc(db, "orders", order.id);
 
@@ -70,39 +72,48 @@ const OrderSummaryPage = () => {
         },
       ],
     });
-    if (order.payOnDelivery === "No") {
-      if (order.paymentMode === "Wallet") {
-        setDoc(doc(db, "walletPayout", paymentId), {
-          id: paymentId,
-          customerId: customer.id,
-          customerName: customer.firstName + " " + customer.lastName,
-          businessName: customer.businessName,
-          amount: order.total,
-          purpose: "Order Payment",
-          orderId: order.id,
-          receiptInfo: receipt,
-          dateMade: serverTimestamp(),
-          processedBy: currentUser.displayName,
-          station: currentUser.station,
-        });
 
-        createOrder(order);
-      } else {
-        setDoc(doc(db, "income", paymentId), {
-          id: paymentId,
-          customerId: customer.id,
-          customerName: customer.firstName + " " + customer.lastName,
-          businessName: customer.businessName,
-          amount: order.total,
-          purpose: "Order Payment",
-          orderId: order.id,
-          paymentMode,
-          receiptInfo: receipt,
-          dateMade: serverTimestamp(),
-          processedBy: currentUser.displayName,
-          station: currentUser.station,
-        });
-      }
+    if (order.paymentMode === "Wallet") {
+      let history = [...customer.history];
+
+      history.push({
+        info: `${order.total}NGN deducted from Wallet for order ${order.id} by ${currentUser.displayName}`,
+        time: today.toLocaleString(),
+      });
+
+      setDoc(doc(db, "walletPayout", paymentId), {
+        id: paymentId,
+        customerId: customer.id,
+        customerName: customer.firstName + " " + customer.lastName,
+        businessName: customer.businessName,
+        amount: +order.total,
+        purpose: "Order Payment",
+        orderId: order.id,
+        dateMade: serverTimestamp(),
+        processedBy: currentUser.displayName,
+        station: currentUser.station,
+      });
+      setDoc(
+        customerRef,
+        { walletBalance: customer.walletBalance, history },
+        { merge: true }
+      );
+    }
+    if (order.paymentMode && order.paymentMode !== "Wallet") {
+      setDoc(doc(db, "income", paymentId), {
+        id: paymentId,
+        customerId: customer.id,
+        customerName: customer.firstName + " " + customer.lastName,
+        businessName: customer.businessName,
+        amount: +order.total,
+        purpose: "Order Payment",
+        orderId: order.id,
+        paymentMode,
+        receiptInfo: receipt,
+        dateMade: serverTimestamp(),
+        processedBy: currentUser.displayName,
+        station: currentUser.station,
+      });
     }
 
     setSaved(true);
@@ -114,7 +125,6 @@ const OrderSummaryPage = () => {
       where("phoneNumber", "==", customer.phoneNumber)
     );
     const querySnapshot = await getDocs(q);
-    const customerRef = doc(db, "customers", customer.id);
 
     if (querySnapshot.empty) {
       setDoc(customerRef, {
@@ -166,7 +176,10 @@ const OrderSummaryPage = () => {
 
   return (
     <div className="p-20">
-      <OrderSummary />
+      <div className="mb-10">
+        <OrderSummary />
+      </div>
+
       {paymentSet ? (
         saved ? (
           <div className="w-full flex flex-col md:flex-row justify-center gap-8 ">
@@ -192,7 +205,6 @@ const OrderSummaryPage = () => {
       ) : (
         <CustomButton
           handleClick={() => {
-            console.log(order);
             openModal("payment-modal");
           }}
         >
@@ -218,7 +230,7 @@ const OrderSummaryPage = () => {
         <div className="w-full mt-8 mb-8 flex flex-col md:flex-row flex-wrap gap-10">
           {paymentOnDelivery === "No" && (
             <div className=" flex flex-col md:flex-row gap-8 w-full md:items-center">
-              {customer.customerType === "ecommerce" && (
+              {customer.customerType === "E-commerce" && (
                 <div className="flex gap-2">
                   <p>Pay from Wallet:</p>
                   <Select

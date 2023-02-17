@@ -16,7 +16,7 @@ import {
 } from "firebase/firestore";
 import { db } from "../firebase/firebase";
 import { useAppConfigContext } from "../contexts/AppConfig.context";
-import { idGenerator, rootUrl } from "../AppBrain";
+import { idGenerator } from "../AppBrain";
 import axios from "axios";
 import { useUserContext } from "../contexts/CurrentUser.Context";
 
@@ -30,6 +30,7 @@ const AddStation = () => {
   const [state, setState] = useState("");
   const [lga, setLga] = useState("");
   const [id, setId] = useState("");
+  const [shortCode, setShortCode] = useState("");
   const [Pin, setPin] = useState("");
   const [strAddress, setStrAddress] = useState("");
   const setStateNId = (state) => {
@@ -43,6 +44,7 @@ const AddStation = () => {
     const snapShot = await getDocs(q);
     const station = {
       name: stationName,
+      shortCode,
       phoneNumber1: phone1,
       phoneNumber2: phone2,
       id,
@@ -55,7 +57,7 @@ const AddStation = () => {
       Object.assign(newStates[state].stations, {
         [stationName]: station,
       });
-      axios.post(`https://kind-waders-hare.cyclic.app/states`, newStates);
+      axios.post(`https://ls.webcouture.com.ng/states`, newStates);
     }
   };
   const { openModal, closeModal } = useThemeContext();
@@ -70,6 +72,7 @@ const AddStation = () => {
       setPhone2("");
       setState("");
       setLga("");
+      setStrAddress("");
       setId("");
       setPin("");
     } else alert("Incorrect Pin");
@@ -88,6 +91,14 @@ const AddStation = () => {
             name="stationName"
             value={stationName}
             handleChange={(e) => setStationName(e.target.value)}
+          />
+        </div>
+        <div className="flex flex-col gap-4 w-full ">
+          <p className="min-w-fit">Short Code</p>
+          <Input
+            type="text"
+            value={shortCode}
+            handleChange={(e) => setShortCode(e.target.value)}
           />
         </div>
         <div className="flex flex-col gap-4 w-full ">

@@ -6,7 +6,9 @@ import {
   doc,
   getDoc,
   getDocs,
+  onSnapshot,
   query,
+  serverTimestamp,
   setDoc,
   Timestamp,
   where,
@@ -26,8 +28,10 @@ import { useAppConfigContext } from "../contexts/AppConfig.context";
 import { useUserContext } from "../contexts/CurrentUser.Context";
 import { useThemeContext } from "../contexts/themeContext";
 import { db } from "../firebase/firebase";
+import NotFound from "./NotFound";
 
 const OrderPage = () => {
+  const [notFound, setNotFound] = useState(false);
   const { stationName, currentUser } = useUserContext();
   const { openModal, closeModal } = useThemeContext();
   const { comparePin, stations, stationsList } = useAppConfigContext();
@@ -59,9 +63,23 @@ const OrderPage = () => {
     });
     setDoc(
       doc(db, "orders", id),
-      { paid: true, paymentMode, receiptInfo: receipt },
+      { paid: true, paymentMode, receiptInfo: receipt, history },
       { merge: true }
     );
+    setDoc(doc(db, "income", paymentId), {
+      id: paymentId,
+      customerId: customer.id,
+      customerName: customer.firstName + " " + customer.lastName,
+      businessName: customer.businessName,
+      amount: +order.total,
+      purpose: "Order Payment",
+      orderId: order.id,
+      paymentMode,
+      receiptInfo: receipt,
+      dateMade: serverTimestamp(),
+      processedBy: currentUser.displayName,
+      station: currentUser.station,
+    });
   };
   function assignTrip() {
     const driverName = trips[tripId].driverName;
@@ -105,6 +123,7 @@ const OrderPage = () => {
   }
   const setTranshipment = () => {
     const { deliveryStatus, history } = order;
+
     if (deliveryStatus === "Order Received") {
       history.push({
         info: `Order indicated for transhipment by ${currentUser.displayName}`,
@@ -260,26 +279,31 @@ const OrderPage = () => {
     closeModal("arrived");
   };
   const setDelivered = () => {
-    const {
-      deliveryStatus,
-
-      history,
-      trackingInfo,
-    } = order;
+    const { deliveryStatus, id, history, trackingInfo, intraCity } = order;
 
     history.push({
       info: `Order set as delivered by ${currentUser.displayName}`,
       time: date.toLocaleString(),
     });
-    if (
+    trackingInfo.push({
+      info: "Order delivered successfully",
+      time: date.toLocaleString(),
+    });
+    const orderRef = doc(db, "orders", id);
+    if (intraCity === "Yes") {
+      setDoc(
+        orderRef,
+        {
+          deliveryStatus: "Delivered",
+          trackingInfo,
+          history,
+        },
+        { merge: true }
+      );
+    } else if (
       deliveryStatus === "Arrived at Destination Station" ||
       deliveryStatus === "With last man delivery"
     ) {
-      trackingInfo.push({
-        info: "Order delivered successfully",
-        time: date.toLocaleString(),
-      });
-      const orderRef = doc(db, "orders", id);
       setDoc(
         orderRef,
         {
@@ -310,18 +334,21 @@ const OrderPage = () => {
   };
   useEffect(() => {
     const orderRef = doc(db, "orders", id);
-    const getOrder = async () => {
-      const snapshot = await getDoc(orderRef);
+    const getOrder = onSnapshot(orderRef, (snapshot) => {
       if (snapshot.exists()) {
         setOrder(snapshot.data());
         setReceiver(snapshot.data().receiver);
         setItem(snapshot.data().item);
         const customerRef = doc(db, "customers", snapshot.data().customerId);
-        const customerSnapshot = await getDoc(customerRef);
-        setCustomer(customerSnapshot.data());
-      }
-    };
-    getOrder();
+        const getCustomer = async () => {
+          const customerSnapshot = await getDoc(customerRef);
+          setCustomer(customerSnapshot.data());
+        };
+        getCustomer();
+      } else setNotFound(true);
+    });
+
+    return getOrder;
   }, []);
   useEffect(() => {
     let today = new Date();
@@ -350,7 +377,8 @@ const OrderPage = () => {
     };
     getTrips();
   }, []);
-  return (
+
+  return !notFound ? (
     <div>
       {order ? (
         <div className="flex flex-col gap-4 w-full">
@@ -487,7 +515,8 @@ const OrderPage = () => {
                     </CustomButton>
                   )}
                 {order.originStation === currentUser.station &&
-                  !order.tripId && (
+                  !order.tripId &&
+                  order.intraCity === "No" && (
                     <CustomButton handleClick={() => openModal("transship")}>
                       Transship
                     </CustomButton>
@@ -517,13 +546,16 @@ const OrderPage = () => {
                       Arrived
                     </CustomButton>
                   )}
-                {order.destinationStation === currentUser.station &&
-                  (order.deliveryStatus === "Arrived at Destination Station" ||
-                    order.deliveryStatus === "With last man delivery") && (
-                    <CustomButton handleClick={() => openModal("delivered")}>
-                      Delivered
-                    </CustomButton>
-                  )}
+                {((order.intraCity === "Yes" &&
+                  order.deliveryStatus === "Dispatched") ||
+                  (order.destinationStation === currentUser.station &&
+                    (order.deliveryStatus ===
+                      "Arrived at Destination Station" ||
+                      order.deliveryStatus === "With last man delivery"))) && (
+                  <CustomButton handleClick={() => openModal("delivered")}>
+                    Delivered
+                  </CustomButton>
+                )}
               </div>
             </div>
             <div className=" h-full">
@@ -864,6 +896,8 @@ const OrderPage = () => {
         <p>loading</p>
       )}
     </div>
+  ) : (
+    <NotFound />
   );
 };
 

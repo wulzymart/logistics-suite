@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import {
   collection,
   doc,
@@ -142,8 +143,13 @@ const Trip = () => {
           </div>
         </div>
       </div>
-      <div className="mt-8 h-[500px]">
-        <TableGrid columns={columns} rows={orders} />
+      <div className="mt-8 w-full ">
+        <TableGrid
+          autoHeight
+          columns={columns}
+          rows={orders}
+          setSelectedId={() => {}}
+        />
       </div>
     </div>
   ) : (

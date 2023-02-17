@@ -113,7 +113,6 @@ const Staffs = () => {
   const getQuery = async (type) => {
     const querySnapshot = await getDocs(type);
     if (!querySnapshot.empty) {
-      console.log(querySnapshot);
       setLastVisible(querySnapshot.docs[querySnapshot.docs.length - 1]);
       setFirstVisible(querySnapshot.docs[0]);
       const tempData = [];
@@ -175,6 +174,7 @@ const Staffs = () => {
           columns={columns}
           rows={searchResult ? searchResult : staffs}
           hideFooter
+          setSelectedId={() => {}}
         />
         {!searchResult && (
           <div className="bg-blue-200 p-4">

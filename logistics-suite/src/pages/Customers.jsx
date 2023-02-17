@@ -125,6 +125,7 @@ const Customers = () => {
     } else type === queryCustomers && setCustomers([]);
     type === nextCustomers && alert("No more customers in this list");
   };
+
   useEffect(() => {
     getQuery(queryCustomers);
   }, [state]);
@@ -182,6 +183,7 @@ const Customers = () => {
           columns={columns}
           rows={searchResult ? searchResult : customers}
           hideFooter
+          setSelectedId={() => {}}
         />
         {!searchResult && (
           <div className="bg-blue-200 p-4">

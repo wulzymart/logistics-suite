@@ -1,9 +1,9 @@
-import React, { useState } from "react";
+import React from "react";
 import { appBrain, idGenerator } from "../../AppBrain";
 import Select from "../select-input/select";
 import PhoneInput from "react-phone-input-2";
 import "react-phone-input-2/lib/style.css";
-import DatePicker from "react-datepicker";
+
 import "react-datepicker/dist/react-datepicker.css";
 import Input from "../input/input";
 import { HiSearch } from "react-icons/hi";
@@ -13,10 +13,7 @@ import {
   setCustomerLastName,
   setCustomerPhone,
   setCustomerEmail,
-  setCustomerSex,
-  setCustomerDOB,
   setCustomerState,
-  setCustomerLga,
   setCustomerStreetAddress,
   getCustomerFromDB,
 } from "../../redux/customer.slice";
@@ -25,13 +22,13 @@ import { useNewWaybillContext } from "../../contexts/NewWaybillContext";
 
 import { getCustomer } from "../../firebase/firebase";
 import { useAppConfigContext } from "../../contexts/AppConfig.context";
+import Textarea from "../textarea/textarea";
 
 const CustomerForm = () => {
   const dispatch = useDispatch();
   const customer = useSelector((state) => state.customer);
   const { newCustomer, setNewCustomer } = useNewWaybillContext();
-  const { states, statesList } = useAppConfigContext();
-  const [selectedDate, setSelectedDate] = useState(new Date());
+  const { statesList } = useAppConfigContext();
 
   return (
     <div id="customer" className="mb-20">
@@ -64,8 +61,11 @@ const CustomerForm = () => {
             <div className=" mb-8 flex flex-col md:flex-row gap-8">
               <div className="w-full relative min-h-full">
                 <PhoneInput
-                  specialLabel="customer Phone Number"
                   placeholder="Phone Number"
+                  inputProps={{
+                    required: true,
+                    autoFocus: true,
+                  }}
                   country={"ng"}
                   onlyCountries={["ng"]}
                   value={customer.phoneNumber}
@@ -76,7 +76,7 @@ const CustomerForm = () => {
                     dispatch(setCustomerPhone(phone));
                   }}
                   containerClass={" !w-full"}
-                  inputClass={"!w-full !h-11"}
+                  inputClass={"!w-full !h-11 !invalid:border-red-500"}
                 />
 
                 {newCustomer === "No" && (
@@ -85,7 +85,7 @@ const CustomerForm = () => {
                       const dbCustomer = await getCustomer(
                         customer.phoneNumber
                       );
-                      console.log(dbCustomer);
+
                       dbCustomer && dispatch(getCustomerFromDB(dbCustomer));
                     }}
                     className="bg-blue-800 text-xl font-bold text-white absolute top-0 right-0 rounded-lg min-h-full w-10 flex justify-center items-center"
@@ -97,6 +97,7 @@ const CustomerForm = () => {
 
               <Input
                 type={"email"}
+                required
                 placeholder={"customer@example.com*"}
                 value={customer.email}
                 handleChange={(e) => dispatch(setCustomerEmail(e.target.value))}
@@ -126,38 +127,13 @@ const CustomerForm = () => {
               />
             </div>
 
-            <div className=" mt-8 flex flex-col md:flex-row  gap-8">
-              <div className="w-full flex items-center">
-                <p className="min-w-fit mr-4">Date of Birth</p>
-                <DatePicker
-                  selected={
-                    newCustomer === "No"
-                      ? customer.dateOfBirth
-                        ? new Date(customer.dateOfBirth)
-                        : selectedDate
-                      : selectedDate
-                  }
-                  onChange={(date) => {
-                    dispatch(setCustomerDOB(new Date(date).toISOString()));
-                    setSelectedDate(new Date(date));
-                  }}
-                  dateFormat="dd/MM/yyyy"
-                  className="w-full rounded-lg"
-                />
-              </div>
-              <Select
-                options={appBrain.customersSex}
-                children={"Select Sex"}
-                value={customer.sex}
-                handleChange={(e) => dispatch(setCustomerSex(e.target.value))}
-              />
-            </div>
             <div>
               <p className="mt-8  font-light  mb-1">Customer Address</p>
               <div className="  flex flex-col   gap-3">
                 <div className="mb-8 flex flex-col md:flex-row   gap-3">
                   <Select
                     name={"customerState"}
+                    required
                     options={statesList ? statesList : ["loading"]}
                     value={customer.address.state}
                     handleChange={(e) =>
@@ -165,25 +141,12 @@ const CustomerForm = () => {
                     }
                     children={"Select State"}
                   />
-                  <Select
-                    name={"customerLga"}
-                    value={customer.address.lga}
-                    options={
-                      customer?.address.state
-                        ? states[customer.address.state].lgas
-                        : [""]
-                    }
-                    handleChange={(e) =>
-                      dispatch(setCustomerLga(e.target.value))
-                    }
-                    children={"Select LGA"}
-                  />
                 </div>
 
-                <Input
-                  type={"text"}
+                <Textarea
                   name={"customerStreetAddress"}
-                  placeholder={"Street Address"}
+                  placeholder={"Address"}
+                  required
                   value={customer.address.streetAddress}
                   handleChange={(e) =>
                     dispatch(setCustomerStreetAddress(e.target.value))
@@ -195,6 +158,13 @@ const CustomerForm = () => {
           </div>
         )}
       </div>
+      {customer.customerType === "E-commerce" && (
+        <div className="my-8 flex justify-end">
+          <p className="text-red-500 font-bold">
+            Wallet Balance: {customer.walletBalance}NGN
+          </p>
+        </div>
+      )}
     </div>
   );
 };

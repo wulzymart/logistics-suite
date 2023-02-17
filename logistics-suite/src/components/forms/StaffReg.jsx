@@ -15,7 +15,6 @@ import {
   setStaffTax,
   setStaffNetSalary,
   setStaffAdminRight,
-  setStaffMonthlyAllowance,
   setStaffState,
   setStaffLga,
   setStaffAddress,
@@ -33,7 +32,7 @@ import {
 import PhoneInput from "react-phone-input-2";
 import "react-phone-input-2/lib/style.css";
 import Select from "../select-input/select";
-import { appBrain, rootUrl } from "../../AppBrain";
+import { appBrain } from "../../AppBrain";
 import ReactDatePicker from "react-datepicker";
 
 import CustomButton from "../button/button";
@@ -47,9 +46,8 @@ const StaffReg = () => {
   const { states, statesList, stations, comparePin, stationsList } =
     useAppConfigContext();
   const { currentUser } = useUserContext();
-  const { openModal } = useThemeContext();
+  const { openModal, closeModal } = useThemeContext();
   const [pin, setPin] = useState("");
-  console.log(states);
 
   const [passwordMatch, setPasswordMatch] = useState(true);
   const dispatch = useDispatch();
@@ -360,18 +358,6 @@ const StaffReg = () => {
             />
           </div>
         </div>
-        <div className="w-full mt-5">
-          <p className="font-medium mb-5">Monthly Expense Allowance</p>
-          <Input
-            type={"number"}
-            name={"staffMonthlyAllowance"}
-            placeholder={"Monthly Allowance"}
-            value={staff.monthlyAllowance}
-            handleChange={(e) =>
-              dispatch(setStaffMonthlyAllowance(e.target.value))
-            }
-          />
-        </div>
       </div>
       <div className="w-full mb-10">
         <p className="font-medium mb-5">Set Password</p>
@@ -439,16 +425,24 @@ const StaffReg = () => {
         handleChange={(e) => setPin(e.target.value)}
         handleSubmit={() => {
           comparePin(pin, currentUser.pin)
-            ? axios
-                .post(`https://kind-waders-hare.cyclic.app/api`, staff)
-                .then((response) => {
-                  if (response.data === true) {
-                    alert(" User Created");
-                    dispatch(resetStaff());
-                  } else alert("error, contact app admin", response.data);
-                })
+            ? axios({
+                method: "post",
+                url: `https://ls.webcouture.com.ng/api`,
+                data: {
+                  staff,
+                },
+                headers: {
+                  " content-type": "application/json",
+                },
+              }).then((response) => {
+                if (response.data === true) {
+                  alert(" User Created");
+                  dispatch(resetStaff());
+                } else alert("error, contact app admin", response.data);
+              })
             : alert("Incorrect Pin");
           setPin("");
+          closeModal("pin-modal");
         }}
       />
     </div>

@@ -124,8 +124,13 @@ const Expenses = () => {
   return (
     <div>
       <Header title="View Station Expenses" />
-      <div className="">
-        <TableGrid autoHeight columns={columns} rows={rows} />
+      <div className="w-full">
+        <TableGrid
+          autoHeight
+          columns={columns}
+          rows={rows}
+          setSelectedId={() => {}}
+        />
       </div>
     </div>
   );

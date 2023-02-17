@@ -274,7 +274,7 @@ const InBound = () => {
   return (
     <div>
       <Header title="View Inbound Orders" />
-      <div className="">
+      <div className="w-full">
         <TableGrid
           autoHeight
           columns={columns}
@@ -313,11 +313,12 @@ const InBound = () => {
             proceeding. Some changes may not be reversible
           </p>
 
-          <div className=" mt-6">
+          <div className=" mt-6 w-full">
             <TableGrid
               columns={modalColumns}
               rows={selectedOrders}
               autoHeight
+              setSelectedId={() => {}}
             />
           </div>
         </div>

@@ -14,7 +14,7 @@ import { db } from "../firebase/firebase";
 
 const Staff = () => {
   const { id } = useParams();
-  console.log(id);
+
   const { openModal } = useThemeContext();
   const { currentUser } = useUserContext();
   const [data, setData] = useState();

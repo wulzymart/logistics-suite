@@ -1,5 +1,4 @@
 import { createSlice } from "@reduxjs/toolkit";
-import { idGenerator } from "../AppBrain";
 let date = new Date();
 
 const initialState = {
@@ -11,7 +10,6 @@ const initialState = {
   originStationId: "",
   destinationStation: "",
   destinationStationId: "",
-  intraState: "No",
   intraCity: "No",
   deliveryType: "",
   deliveryStatus: "Order Received",
@@ -25,29 +23,28 @@ const initialState = {
   receiver: {
     firstName: "",
     lastName: "",
-    businessName: "",
     phoneNumber: "",
     address: {
       state: "",
-      lga: "",
+
       streetAddress: "",
     },
   },
   item: {
     description: "",
-    value: "",
-    weight: "",
+    value: 0,
+    weight: 1,
     quantity: "",
     cartegory: "",
     condition: "",
   },
   insurance: "",
-  freightPrice: "",
+  freightPrice: 0,
   additionalCharges: {},
-  totalAdditionalCharges: "",
-  subtotal: "",
-  VAT: "",
-  total: "",
+  totalAdditionalCharges: 0,
+  subtotal: 0,
+  VAT: 0,
+  total: 0,
   payOnDelivery: "",
   paymentMode: "",
   receiptInfo: "",
@@ -66,9 +63,7 @@ const orderSlice = createSlice({
     setIntraCity(state, action) {
       state.intraCity = action.payload;
     },
-    setIntraState(state, action) {
-      state.intraState = action.payload;
-    },
+
     setDeliveryType(state, action) {
       state.deliveryType = action.payload;
     },
@@ -81,18 +76,14 @@ const orderSlice = createSlice({
     setReceiverLastName(state, action) {
       state.receiver.lastName = action.payload;
     },
-    setReceiverBusinessName(state, action) {
-      state.receiver.businessName = action.payload;
-    },
+
     setReceiverPhone(state, action) {
       state.receiver.phoneNumber = action.payload;
     },
     setReceiverState(state, action) {
       state.receiver.address.state = action.payload;
     },
-    setReceiverLga(state, action) {
-      state.receiver.address.lga = action.payload;
-    },
+
     setReceiverStreetAddress(state, action) {
       state.receiver.address.streetAddress = action.payload;
     },
@@ -103,37 +94,37 @@ const orderSlice = createSlice({
       state.item.description = action.payload;
     },
     setItemValue(state, action) {
-      state.item.value = action.payload;
+      state.item.value = +action.payload;
     },
     setItemWeight(state, action) {
-      state.item.weight = action.payload;
+      state.item.weight = +action.payload;
     },
     setItemQuantity(state, action) {
-      state.item.quantity = action.payload;
+      state.item.quantity = +action.payload;
     },
     setItemCondition(state, action) {
       state.item.condition = action.payload;
     },
     setFreightPrice(state, action) {
-      state.freightPrice = action.payload;
+      state.freightPrice = +action.payload;
     },
     setSubtotal(state, action) {
-      state.subtotal = action.payload;
+      state.subtotal = +action.payload;
     },
     setVAT(state, action) {
-      state.VAT = action.payload;
+      state.VAT = +action.payload;
     },
     setAdditionalCharges(state, action) {
       state.additionalCharges = action.payload;
     },
     setTotalAdditionalCharges(state, action) {
-      state.totalAdditionalCharges = action.payload;
+      state.totalAdditionalCharges = +action.payload;
     },
     setInsurance(state, action) {
-      state.insurance = action.payload;
+      state.insurance = +action.payload;
     },
     setTotal(state, action) {
-      state.total = action.payload;
+      state.total = +action.payload;
     },
     setPayOnDelivery(state, action) {
       state.payOnDelivery = action.payload;
