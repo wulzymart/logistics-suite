@@ -14,7 +14,7 @@ import {
 import { AiOutlineSend } from "react-icons/ai";
 import { RiLoginBoxFill } from "react-icons/ri";
 import { GiMoneyStack, GiWindyStripes } from "react-icons/gi";
-import { BiTrip } from "react-icons/bi";
+import { BiGitPullRequest, BiTrip } from "react-icons/bi";
 import { GiBattleship } from "react-icons/gi";
 import { HiOfficeBuilding, HiUserGroup } from "react-icons/hi";
 import { GiExpense } from "react-icons/gi";
@@ -92,6 +92,11 @@ export const links = [
         name: "Customers",
         icon: <HiUserGroup />,
         link: "/customers",
+      },
+      {
+        name: "Pickup Requests",
+        icon: <BiGitPullRequest />,
+        link: "/pickup-requests",
       },
     ],
   },

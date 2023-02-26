@@ -44,6 +44,8 @@ import AssignLocalTrip from "./pages/AssignLocalTrip";
 import NotFound from "./pages/NotFound";
 import AdminRoutes from "./utils/AdminRoutes";
 import SuperAdminRoutes from "./utils/SuperAdminRoutes";
+import PickupRequests from "./pages/PickupRequests";
+import PickupRequest from "./pages/PickupRequest";
 
 function App() {
   const { currentMode } = useThemeContext();
@@ -81,6 +83,14 @@ function App() {
                         element={<OrderSummaryPage />}
                       />
                     </Route>
+                    <Route
+                      path="pickup-requests"
+                      element={<PickupRequests />}
+                    />
+                    <Route
+                      path="pickup-requests/:id"
+                      element={<PickupRequest />}
+                    />
                     <Route path="create-trip" element={<CreateTrip />} />
                     <Route path="new-expense" element={<AddExpense />} />
 

@@ -31,6 +31,7 @@ import { useThemeContext } from "../contexts/themeContext";
 import Textarea from "../components/textarea/textarea";
 import PinModal from "../components/PinModal";
 import { idGenerator } from "../AppBrain";
+import axios from "axios";
 
 const CustomerPage = () => {
   const paymentId = idGenerator(10);
@@ -184,15 +185,31 @@ const CustomerPage = () => {
       info: `customer upgraded to E-commerce by ${currentUser.displayName}`,
       time: today,
     });
-    setDoc(
-      customerRef,
-      {
-        customerType: "E-commerce",
-        businessName,
-        history,
+    axios({
+      method: "post",
+      url: `https://ls.webcouture.com.ng/ecommerce-user`,
+      data: {
+        customer,
       },
-      { merge: true }
-    );
+      headers: {
+        " content-type": "application/json",
+      },
+    }).then((res) => {
+      if (res.data === true) {
+        setDoc(
+          customerRef,
+          {
+            customerType: "E-commerce",
+            businessName,
+            history,
+          },
+          { merge: true }
+        );
+      } else
+        alert(`${res.data.code} ${res.data.message}.
+       'Please contact your software administrator for more details'`);
+    });
+
     closeModal("upgrade");
   };
   const topUp = () => {
@@ -314,11 +331,7 @@ const CustomerPage = () => {
             <div className="flex flex-col bg-blue-400  w-full p-8 rounded-lg mb-4 gap-y-2">
               <p className="">Address:</p>
               <p className="">
-                {customer.address.streetAddress +
-                  " " +
-                  customer.address.lga +
-                  " " +
-                  customer.address.state}
+                {customer.address.streetAddress + " " + customer.address.state}
               </p>
             </div>
           </div>

@@ -383,7 +383,7 @@ const OrderPage = () => {
       {order ? (
         <div className="flex flex-col gap-4 w-full">
           <Header title="Order Information" />
-          <div className="w-full rounded-lg p-8 bg-blue-200 flex flex-wrap justify-around gap-y-4">
+          <div className="w-full rounded-lg p-8 bg-blue-200 flex flex-col md:flex-row md:flex-wrap justify-around gap-y-4">
             <div className="min-w-52 flex flex-col gap-4">
               <p className="flex flex-col  gap-2 mb-2">
                 <span className="font-bold">Tracking ID:</span>
@@ -433,7 +433,7 @@ const OrderPage = () => {
           </div>
 
           <div className="flex flex-col md:flex-row  gap-4 ">
-            <div className="flex flex-col  h-fulf w-1/3 bg-slate-100 border border-solid border-slate-300 p-8 rounded-lg ">
+            <div className="flex flex-col  h-full md:w-1/3 bg-slate-100 border border-solid border-slate-300 p-8 rounded-lg ">
               {customer ? (
                 <div className="mb-10 pb-8 border-b border-b-black">
                   <p className="text-xl font-semibold mb-4">

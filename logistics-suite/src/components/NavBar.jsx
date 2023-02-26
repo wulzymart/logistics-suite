@@ -1,5 +1,5 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 
 import { AiOutlineMenu } from "react-icons/ai";
 import { BsChatLeft } from "react-icons/bs";
@@ -10,6 +10,9 @@ import { TooltipComponent } from "@syncfusion/ej2-react-popups";
 import { getAuth, signOut } from "firebase/auth";
 import { useUserContext } from "../contexts/CurrentUser.Context";
 import { useThemeContext } from "../contexts/themeContext";
+import Input from "./input/input";
+import { useNavigate } from "react-router-dom";
+import { HiSearch } from "react-icons/hi";
 const NavButton = ({ title, customFunc, icon, color, dotColor }) => (
   <TooltipComponent content={title} position="BottomCenter">
     <button
@@ -28,6 +31,7 @@ const NavButton = ({ title, customFunc, icon, color, dotColor }) => (
 );
 const NavBar = () => {
   const { currentUser } = useUserContext();
+  const Navigate = useNavigate();
   const {
     currentColor,
 
@@ -37,6 +41,7 @@ const NavBar = () => {
     screenSize,
     setScreenSize,
   } = useThemeContext();
+  const [orderId, setOrderId] = useState("");
   useEffect(() => {
     const handleResize = () => setScreenSize(window.innerWidth);
     window.addEventListener("resize", handleResize);
@@ -50,7 +55,7 @@ const NavBar = () => {
   }, [screenSize]);
 
   return (
-    <div className="flex justify-between p-2 md:mx-6relative">
+    <div className="flex justify-between p-2 py-5 relative">
       <NavButton
         title="Menu"
         customFunc={() => setActiveMenu(!activeMenu)}
@@ -58,6 +63,24 @@ const NavBar = () => {
         icon={<AiOutlineMenu />}
       />
       <div className="flex">
+        <div className="w-[35%] md:w-[200px] md:mr-10 relative min-h-full">
+          <Input
+            type="text"
+            value={orderId}
+            handleChange={(e) => setOrderId(e.target.value)}
+            placeholder="Search Waybill"
+          />
+          <button
+            onClick={() =>
+              orderId?.length > 10
+                ? Navigate(`/orders/${orderId}`)
+                : alert("enter a valid waybill number")
+            }
+            className="bg-blue-800  text-xl font-bold text-white absolute top-0 right-0 rounded-lg min-h-full w-10 flex justify-center items-center"
+          >
+            <HiSearch />
+          </button>
+        </div>
         <NavButton
           title="Chat"
           dotColor="#03C9D7"

@@ -1,8 +1,18 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import { collection, onSnapshot, query, where } from "firebase/firestore";
+import {
+  collection,
+  onSnapshot,
+  orderBy,
+  query,
+  Timestamp,
+  where,
+} from "firebase/firestore";
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { db } from "../firebase/firebase";
 import { useUserContext } from "./CurrentUser.Context";
+let today = new Date();
+let date = new Date(today.toDateString());
+console.log(today, date);
 
 const TablesContext = createContext();
 export const TableProvider = ({ children }) => {
@@ -11,6 +21,8 @@ export const TableProvider = ({ children }) => {
   const [transshipInRows, setTransshipInRows] = useState([]);
   const [transshipOutRows, setTransshipOutRows] = useState([]);
   const [outRows, setOutRows] = useState([]);
+  const [pickupRequests, setPickupRequests] = useState([]);
+  const [unattendedReqs, setUnattendedReqs] = useState(0);
 
   const ordersRef = collection(db, "orders");
   const InboundQuery = query(
@@ -45,16 +57,43 @@ export const TableProvider = ({ children }) => {
       setRows(tempData);
     });
   };
+  const requestsQuery = query(
+    collection(db, "pickups"),
+    where("nearestStation", "==", stationName),
+    where("dateCreated", ">=", Timestamp.fromDate(date)),
+    orderBy("dateCreated", "desc")
+  );
+  const getRequests = () => {
+    onSnapshot(requestsQuery, (snapshots) => {
+      const tempData = [];
+      snapshots.forEach((snapshot) => {
+        tempData.push(snapshot.data());
+      });
+      let count = 0;
+      tempData.length &&
+        tempData.forEach((data) => !data.attendedTo && count++);
+      setPickupRequests(tempData);
+      setUnattendedReqs(count);
+    });
+  };
   useEffect(() => {
     stationName && getQuery(InboundQuery, setInRows);
     stationName && getQuery(OutboundQuery, setOutRows);
     stationName && getQuery(transshippedInQuery, setTransshipInRows);
     stationName && getQuery(transshippedOutQuery, setTransshipOutRows);
+    stationName && getRequests();
   }, [stationName]);
 
   return (
     <TablesContext.Provider
-      value={{ inRows, outRows, transshipInRows, transshipOutRows }}
+      value={{
+        inRows,
+        outRows,
+        transshipInRows,
+        transshipOutRows,
+        pickupRequests,
+        unattendedReqs,
+      }}
     >
       {children}
     </TablesContext.Provider>

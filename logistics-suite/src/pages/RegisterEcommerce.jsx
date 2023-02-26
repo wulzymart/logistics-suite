@@ -13,7 +13,6 @@ import {
   setCustomerPhone,
   setCustomerEmail,
   setCustomerState,
-  setCustomerLga,
   setCustomerStreetAddress,
   setCustomerBusinessName,
   setWalletBalance,
@@ -35,12 +34,13 @@ import {
   where,
 } from "firebase/firestore";
 import { idGenerator } from "../AppBrain";
+import axios from "axios";
 
 const RegisterEcommerce = () => {
   const dispatch = useDispatch();
 
   const customer = useSelector((state) => state.customer);
-  const { states, statesList, comparePin } = useAppConfigContext();
+  const { statesList, comparePin } = useAppConfigContext();
   const { currentUser } = useUserContext();
   const { openModal, closeModal } = useThemeContext();
   const [Pin, setPin] = useState("");
@@ -57,20 +57,32 @@ const RegisterEcommerce = () => {
       const customerRef = doc(db, "customers", customer.id);
       if (querySnapshot.empty) {
         const paymentId = idGenerator(10);
-        setDoc(doc(db, "income", paymentId), {
-          id: paymentId,
-          customerId: customer.id,
-          customerName: customer.firstName + " " + customer.lastName,
-          businessName: customer.businessName,
-          amount: +customer.walletBalance,
-          purpose: "Wallet Top-up",
-          paymentMode,
-          receiptInfo,
-          dateMade: serverTimestamp(),
-          processedBy: currentUser.displayName,
-          station: currentUser.station,
-        })
-          .then(() => {
+        axios({
+          method: "post",
+          url: `https://ls.webcouture.com.ng/ecommerce-user`,
+          data: {
+            customer,
+          },
+          headers: {
+            " content-type": "application/json",
+          },
+        }).then((res) => {
+          console.log(res.data);
+          if (res.data === true) {
+            setDoc(doc(db, "income", paymentId), {
+              id: paymentId,
+              customerId: customer.id,
+              customerName: customer.firstName + " " + customer.lastName,
+              businessName: customer.businessName,
+              amount: +customer.walletBalance,
+              purpose: "Wallet Top-up",
+              paymentMode,
+              receiptInfo,
+              dateMade: serverTimestamp(),
+              processedBy: currentUser.displayName,
+              station: currentUser.station,
+            });
+
             setDoc(customerRef, {
               ...customer,
               dateCreated: serverTimestamp(),
@@ -83,6 +95,9 @@ const RegisterEcommerce = () => {
             })
               .then(() => {
                 closeModal("pin-modal");
+                setPin("");
+                setPaymentMode("");
+                setReceiptInfo("");
                 closeModal("newEcommerce-modal");
                 dispatch(resetCustomer());
                 alert("customer successfully created");
@@ -92,11 +107,10 @@ const RegisterEcommerce = () => {
                   err &&
                   alert("error creating customer, Payment has been registered")
               );
-          })
-          .catch(
-            (err) =>
-              err && alert("error saving payment, customer not registered")
-          );
+          } else
+            alert(`${res.data.code} ${res.data.message}.
+       'Please contact your software administrator for more details'`);
+        });
       } else alert("Customer with phone number exists");
     } else alert("incorrect Pin");
   };
@@ -141,7 +155,7 @@ const RegisterEcommerce = () => {
         </div>
       </div>
       <p className="mb-4">Business Address</p>
-      <div className="w-full flex flex-col md:flex-row gap-8 mb-8 items-center">
+      <div className="w-full flex flex-col gap-8 mb-8 items-center">
         <div className=" flex flex-col gap-8 w-full">
           <div className=" flex  gap-4 w-full items-center">
             <p>State</p>
@@ -155,23 +169,9 @@ const RegisterEcommerce = () => {
               Select State
             </Select>
           </div>
-          <div className=" flex  gap-4 w-full items-center">
-            <p>LGA</p>
-            <Select
-              name={"customerLga"}
-              value={customer.address.lga}
-              options={
-                customer.address.state
-                  ? states[customer.address.state].lgas
-                  : [""]
-              }
-              handleChange={(e) => dispatch(setCustomerLga(e.target.value))}
-              children={"Select LGA"}
-            />
-          </div>
         </div>
 
-        <div className=" flex flex-col gap-8 w-full">
+        <div className=" flex gap-8 w-full">
           <p> Street Address</p>
           <TextArea
             value={customer.address.streetAddress}
@@ -211,7 +211,7 @@ const RegisterEcommerce = () => {
           <p>Opening Balance</p>
           <Input
             type="number"
-            value={customer.walletBalance}
+            value={customer.walletBalance ? customer.walletBalance : ""}
             handleChange={(e) => dispatch(setWalletBalance(+e.target.value))}
           />
         </div>
