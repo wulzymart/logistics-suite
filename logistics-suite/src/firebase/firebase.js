@@ -7,7 +7,6 @@ import {
   query,
   where,
   getDocs,
-  enableIndexedDbPersistence,
 } from "firebase/firestore";
 
 const firebaseConfig = {

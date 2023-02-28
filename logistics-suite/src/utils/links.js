@@ -2,6 +2,7 @@ import {
   MdAccountBalance,
   MdAddBusiness,
   MdAltRoute,
+  MdOutlineReviews,
   MdSummarize,
 } from "react-icons/md";
 import {
@@ -19,6 +20,7 @@ import { GiBattleship } from "react-icons/gi";
 import { HiOfficeBuilding, HiUserGroup } from "react-icons/hi";
 import { GiExpense } from "react-icons/gi";
 import { IoIosBusiness } from "react-icons/io";
+import { GrUserWorker } from "react-icons/gr";
 
 export const links = [
   {
@@ -56,10 +58,6 @@ export const links = [
         name: "Inbound",
         icon: <RiLoginBoxFill />,
         link: "/inbound",
-      },
-      {
-        name: "Ware House",
-        icon: <FaWarehouse />,
       },
     ],
   },
@@ -114,25 +112,12 @@ export const links = [
         icon: <GiMoneyStack />,
         link: "/admin/expenses",
       },
+
       {
-        name: "Register E-commerce",
-        icon: <MdAddBusiness />,
-        link: "/admin/new-ecommerce-customer",
+        name: "Station Summary",
+        icon: <HiOfficeBuilding />,
+        link: "/admin/station-summary",
       },
-      {
-        name: "Staff",
-        icon: <FaUsers />,
-        link: "/admin/staff",
-      },
-      {
-        name: "Manage Stations",
-        icon: <IoIosBusiness />,
-        link: "/admin/stations",
-      },
-      // {
-      //   name: "Station Summary",
-      //   icon: <HiOfficeBuilding />,
-      // },
     ],
   },
   {
@@ -147,7 +132,7 @@ export const links = [
       {
         name: "Inflow",
         icon: <MdAccountBalance />,
-        link: "/suoer-admin/money-in",
+        link: "/super-admin/money-in",
       },
       {
         name: "Outflow",
@@ -161,11 +146,26 @@ export const links = [
     authorized: ["Super Admin"],
     links: [
       {
+        name: "Register E-commerce",
+        icon: <MdAddBusiness />,
+        link: "/super-admin/new-ecommerce-customer",
+      },
+      {
         name: "Add New Staff",
         icon: <FaUserPlus />,
         link: "/super-admin/staff-registration",
       },
+      {
+        name: "Staff",
+        icon: <FaUsers />,
+        link: "/super-admin/staff",
+      },
 
+      {
+        name: "Manage Stations",
+        icon: <IoIosBusiness />,
+        link: "/super-admin/stations",
+      },
       {
         name: "Add Station",
         icon: <IoIosBusiness />,
@@ -185,6 +185,16 @@ export const links = [
         name: "Manage Pricing",
         icon: <FaShuttleVan />,
         link: "/super-admin/manage-pricing",
+      },
+      {
+        name: "Reviews",
+        icon: <MdOutlineReviews />,
+        link: "/super-admin/reviews",
+      },
+      {
+        name: "Place Job Adverts",
+        icon: <GrUserWorker />,
+        link: "/super-admin/jobs",
       },
     ],
   },

@@ -1,6 +1,6 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import axios from "axios";
-import { getAuth, onAuthStateChanged } from "firebase/auth";
+import { getAuth, onAuthStateChanged, signOut } from "firebase/auth";
 
 import React, { createContext, useContext, useEffect, useState } from "react";
 
@@ -9,7 +9,8 @@ import { app } from "../firebase/firebase";
 const UserContext = createContext();
 
 export const UserContextProvider = ({ children }) => {
-  const [currentUser, setCurrentUser] = useState("loading");
+  const [isLoading, setIsLoading] = useState(true);
+  const [currentUser, setCurrentUser] = useState(null);
   const [stationName, setStationName] = useState("");
   const [stationId, setStationId] = useState("");
   const [staffState, setStaffState] = useState("");
@@ -19,20 +20,26 @@ export const UserContextProvider = ({ children }) => {
     onAuthStateChanged(auth, async (user) => {
       if (user) {
         const uid = user.uid;
-        await axios
-          .get(`https://ls.webcouture.com.ng/users/?uid=${uid}`)
-          .then((data) => {
-            const loggedInUser = data.data;
-            setCurrentUser(loggedInUser);
-            setStationName(loggedInUser.station);
-            setStationId(loggedInUser.stationId);
-            setStaffState(loggedInUser?.address?.state);
-          });
+        uid.length === 10
+          ? await axios
+              .get(`https://ls.webcouture.com.ng/users/?uid=${uid}`)
+              .then((data) => {
+                const loggedInUser = data.data;
+                setIsLoading(false);
+                setCurrentUser(loggedInUser);
+                setStationName(loggedInUser.station);
+                setStationId(loggedInUser.stationId);
+                setStaffState(loggedInUser?.address?.state);
+              })
+          : signOut(auth).then(() => {
+              setCurrentUser(null);
+            });
       } else {
         setCurrentUser(null);
         setStationName("");
         setStationId("");
         setStaffState("");
+        setIsLoading(false);
       }
     });
 
@@ -49,6 +56,7 @@ export const UserContextProvider = ({ children }) => {
         setStationName,
         stationId,
         setStationId,
+        isLoading,
       }}
     >
       {children}

@@ -2,20 +2,16 @@
 
 // getCount of unattended data from the length of the array, let notifictaion icon be red and display number of unattended requests
 
-// add button to each grid to mark as attended to
-import React, { useState } from "react";
+import React from "react";
 import { Link } from "react-router-dom";
-import CustomButton from "../components/button/button";
+
 import Header from "../components/Header";
-import Modal from "../components/Modal";
-import PinModal from "../components/PinModal";
+
 import TableGrid from "../components/TableGrid";
 import { useTablesContext } from "../contexts/TablesContext";
 
 const PickupRequests = () => {
-  const { pickupRequests, unattendedReqs } = useTablesContext();
-  const [pin, setPin] = useState("");
-  const [selectedIds, setSelectedIds] = useState([]);
+  const { pickupRequests } = useTablesContext();
 
   function getCustomerName(params) {
     return `${params.row.firstName || ""} ${params.row.lastName || ""}`;
@@ -85,8 +81,7 @@ const PickupRequests = () => {
           autoHeight
           columns={columns}
           rows={pickupRequests}
-          setSelectedId={null}
-          checkboxSelection
+          setSelectedId={() => {}}
         />
       </div>
     </div>

@@ -60,7 +60,6 @@ const Inflow = () => {
       const total = tempData.reduce((acc, data) => acc + +data.amount, 0);
       setRows(tempData);
       setTotal(total);
-     
     });
   }
   const ecomColumns = [
@@ -177,7 +176,6 @@ const Inflow = () => {
                 value={startDate}
                 onChange={(newValue) => {
                   setStartDate(newValue.$d);
-                
                 }}
               />
             </LocalizationProvider>

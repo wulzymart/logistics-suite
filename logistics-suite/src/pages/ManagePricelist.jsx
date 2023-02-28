@@ -46,7 +46,7 @@ const ManagePricelist = () => {
     closeModal("pin-modal");
   };
   useEffect(() => {
-    console.log(pricing_);
+   
   }, [pricing_]);
   return (
     pricingList && (
@@ -102,7 +102,7 @@ const ManagePricelist = () => {
                       Object.assign(newp, { [priItem]: pricing_[priItem] });
                     }
                   });
-                  console.log(newp);
+                 
                   setPricing(newp);
                 }}
               >

@@ -12,7 +12,6 @@ import { db } from "../firebase/firebase";
 import { useUserContext } from "./CurrentUser.Context";
 let today = new Date();
 let date = new Date(today.toDateString());
-console.log(today, date);
 
 const TablesContext = createContext();
 export const TableProvider = ({ children }) => {

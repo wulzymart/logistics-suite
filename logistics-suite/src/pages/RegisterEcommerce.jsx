@@ -67,7 +67,6 @@ const RegisterEcommerce = () => {
             " content-type": "application/json",
           },
         }).then((res) => {
-          console.log(res.data);
           if (res.data === true) {
             setDoc(doc(db, "income", paymentId), {
               id: paymentId,

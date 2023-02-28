@@ -151,7 +151,7 @@ const Outflow = () => {
 
   return (
     <div>
-      <Header title="Account Summary" />
+      <Header title="Account Outflow Summary" />
       <div>
         <div className=" gap-4 items-center flex justify-end mb-4">
           <div className="p-4 rounded-lg flex flex-col md:flex-row w-1/2 justify-end  gap-4">

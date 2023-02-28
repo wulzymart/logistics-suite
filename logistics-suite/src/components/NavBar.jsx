@@ -2,7 +2,6 @@
 import React, { useEffect, useState } from "react";
 
 import { AiOutlineMenu } from "react-icons/ai";
-import { BsChatLeft } from "react-icons/bs";
 import { RiNotification3Line } from "react-icons/ri";
 import { MdKeyboardArrowDown } from "react-icons/md";
 import { TooltipComponent } from "@syncfusion/ej2-react-popups";
@@ -13,6 +12,7 @@ import { useThemeContext } from "../contexts/themeContext";
 import Input from "./input/input";
 import { useNavigate } from "react-router-dom";
 import { HiSearch } from "react-icons/hi";
+import { useTablesContext } from "../contexts/TablesContext";
 const NavButton = ({ title, customFunc, icon, color, dotColor }) => (
   <TooltipComponent content={title} position="BottomCenter">
     <button
@@ -30,6 +30,7 @@ const NavButton = ({ title, customFunc, icon, color, dotColor }) => (
   </TooltipComponent>
 );
 const NavBar = () => {
+  const { unattendedReqs } = useTablesContext();
   const { currentUser } = useUserContext();
   const Navigate = useNavigate();
   const {
@@ -82,15 +83,8 @@ const NavBar = () => {
           </button>
         </div>
         <NavButton
-          title="Chat"
-          dotColor="#03C9D7"
-          customFunc={() => {}}
-          color={currentColor}
-          icon={<BsChatLeft />}
-        />
-        <NavButton
           title="Notifications"
-          dotColor={"#03C9D7"}
+          dotColor={!unattendedReqs ? "#03C9D7" : "#f53e31"}
           customFunc={() => {}}
           color={currentColor}
           icon={<RiNotification3Line />}
@@ -98,7 +92,7 @@ const NavBar = () => {
         <TooltipComponent
           content="Profile"
           position="BottomCenter"
-          onClick={() => {}}
+          onClick={() => Navigate("/profile")}
         >
           <div className="flex items-center gap-2 cursor-pointer p-1 hover:bg-light-gray rounded-lg">
             <p>
@@ -114,13 +108,7 @@ const NavBar = () => {
           <div
             onClick={() => {
               const auth = getAuth();
-              signOut(auth)
-                .then(() => {
-                  // navigate("/login");
-                })
-                .catch((error) => {
-                  // An error happened.
-                });
+              signOut(auth);
             }}
             className="flex items-center gap-2 cursor-pointer p-1 hover:bg-light-gray rounded-lg"
           >
@@ -130,10 +118,6 @@ const NavBar = () => {
           </div>
         </TooltipComponent>
       </div>
-      {/* {isClicked.chat && <Chat />}
-      {isClicked.cart && <Cart />}
-      {isClicked.notification && <Notification />}
-      {isClicked.userProfile && <UserProfile />} */}
     </div>
   );
 };

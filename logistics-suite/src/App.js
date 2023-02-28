@@ -46,119 +46,128 @@ import AdminRoutes from "./utils/AdminRoutes";
 import SuperAdminRoutes from "./utils/SuperAdminRoutes";
 import PickupRequests from "./pages/PickupRequests";
 import PickupRequest from "./pages/PickupRequest";
+import Station from "./pages/Station";
+import StationSummary from "./pages/StationSummary";
+import ManageReviews from "./pages/ManageReviews";
+import JobAdverts from "./pages/JobAdverts";
 
 function App() {
   const { currentMode } = useThemeContext();
   const { states } = useAppConfigContext();
-  const { currentUser } = useUserContext();
-  return (
-    <div>
-      {states ? (
-        <div className={`${currentMode === "Dark" ? "dark" : ""} `}>
-          <BrowserRouter>
-            <NewWaybillProvider>
-              <Routes>
-                <Route element={<PrivateRoutes />}>
-                  <Route path="/print-waybill" element={<PrintOrder />} />
-                </Route>
-                <Route element={<Layout />}>
-                  <Route path="/" element={<PrivateRoutes />}>
-                    <Route
-                      index
-                      element={
-                        currentUser !== "loading" ? <Summary /> : "loading"
-                      }
-                    />
-                    <Route
-                      path="profile"
-                      element={
-                        currentUser !== "loading" ? <Profile /> : "loading"
-                      }
-                    />
-
-                    <Route path="new-waybill">
-                      <Route index element={<NewWaybil />} />
-                      <Route
-                        path="order-summary"
-                        element={<OrderSummaryPage />}
-                      />
-                    </Route>
-                    <Route
-                      path="pickup-requests"
-                      element={<PickupRequests />}
-                    />
-                    <Route
-                      path="pickup-requests/:id"
-                      element={<PickupRequest />}
-                    />
-                    <Route path="create-trip" element={<CreateTrip />} />
-                    <Route path="new-expense" element={<AddExpense />} />
-
-                    <Route path="inbound" element={<Inbound />} />
-                    <Route path="outbound" element={<Outbound />} />
-                    <Route path="assign-trip" element={<AssignTrip />} />
-                    <Route
-                      path="assign-local-trip"
-                      element={<AssignLocalTrip />}
-                    />
-                    <Route path="orders/:id" element={<OrderPage />} />
-                    <Route path="/customers" element={<Customers />} />
-                    <Route path="/customers/:id" element={<CustomerPage />} />
-                    <Route path="trips" element={<Trips />} />
-                    <Route path="/trips/:trip" element={<Trip />} />
-                    <Route element={<AdminRoutes />}>
-                      <Route path="admin">
-                        <Route path="stations" element={<ManageStations />} />
-                        <Route path="staff" element={<Staffs />} />
-                        <Route path="staff/:id" element={<Staff />} />
-                        <Route path="expenses" element={<Expenses />} />
-                        <Route path="create-route" element={<CreateRoute />} />
-                        <Route
-                          path="new-ecommerce-customer"
-                          element={<RegisterEcommerce />}
-                        />
-                      </Route>
-                    </Route>
-                    <Route element={<SuperAdminRoutes />}>
-                      <Route path="super-admin">
-                        <Route
-                          path="staff-registration"
-                          element={<NewStaff />}
-                        />
-                        <Route
-                          path="manage-expenses"
-                          element={<ManageExpenses />}
-                        />
-                        <Route path="money-in" element={<Inflow />} />
-                        <Route path="money-out" element={<Outflow />} />
-
-                        <Route path="add-stations" element={<AddStation />} />
-                        <Route path="add-vehicle" element={<AddVehicle />} />
-                        <Route
-                          path="manage-pricing"
-                          element={<ManagePricelist />}
-                        />
-                        <Route path="create-route" element={<CreateRoute />} />
-                      </Route>
-                    </Route>
+  const { isLoading } = useUserContext();
+  if (!isLoading) {
+    return (
+      <div>
+        {states ? (
+          <div className={`${currentMode === "Dark" ? "dark" : ""} `}>
+            <BrowserRouter>
+              <NewWaybillProvider>
+                <Routes>
+                  <Route element={<PrivateRoutes />}>
+                    <Route path="/print-waybill" element={<PrintOrder />} />
                   </Route>
-                  <Route path="*" element={<NotFound />} />
-                </Route>
+                  <Route element={<Layout />}>
+                    <Route path="/" element={<PrivateRoutes />}>
+                      <Route index element={<Summary />} />
+                      <Route path="profile" element={<Profile />} />
 
-                <Route element={<LoginRoute />}>
-                  <Route path="/login" element={<Login />} />
-                </Route>
-              </Routes>
-            </NewWaybillProvider>
-          </BrowserRouter>
-        </div>
-      ) : (
-        <div className="w-full h-screen flex items-center justify-center">
-          <p>loading</p>
-        </div>
-      )}
-    </div>
-  );
+                      <Route path="new-waybill">
+                        <Route index element={<NewWaybil />} />
+                        <Route
+                          path="order-summary"
+                          element={<OrderSummaryPage />}
+                        />
+                      </Route>
+                      <Route
+                        path="pickup-requests"
+                        element={<PickupRequests />}
+                      />
+                      <Route
+                        path="pickup-requests/:id"
+                        element={<PickupRequest />}
+                      />
+                      <Route path="create-trip" element={<CreateTrip />} />
+                      <Route path="new-expense" element={<AddExpense />} />
+
+                      <Route path="inbound" element={<Inbound />} />
+                      <Route path="outbound" element={<Outbound />} />
+                      <Route path="assign-trip" element={<AssignTrip />} />
+                      <Route
+                        path="assign-local-trip"
+                        element={<AssignLocalTrip />}
+                      />
+                      <Route path="orders/:id" element={<OrderPage />} />
+                      <Route path="/customers" element={<Customers />} />
+                      <Route path="/customers/:id" element={<CustomerPage />} />
+                      <Route path="trips" element={<Trips />} />
+                      <Route path="/trips/:trip" element={<Trip />} />
+                      <Route element={<AdminRoutes />}>
+                        <Route path="admin">
+                          <Route
+                            path="station-summary"
+                            element={<StationSummary />}
+                          />
+                          <Route path="expenses" element={<Expenses />} />
+                          <Route
+                            path="create-route"
+                            element={<CreateRoute />}
+                          />
+                        </Route>
+                      </Route>
+                      <Route element={<SuperAdminRoutes />}>
+                        <Route path="super-admin">
+                          <Route
+                            path="staff-registration"
+                            element={<NewStaff />}
+                          />
+                          <Route path="staff" element={<Staffs />} />
+                          <Route path="staff/:id" element={<Staff />} />
+                          <Route
+                            path="new-ecommerce-customer"
+                            element={<RegisterEcommerce />}
+                          />
+                          <Route path="stations" element={<ManageStations />} />
+                          <Route path="stations/:id" element={<Station />} />
+                          <Route
+                            path="manage-expenses"
+                            element={<ManageExpenses />}
+                          />
+                          <Route path="money-in" element={<Inflow />} />
+                          <Route path="money-out" element={<Outflow />} />
+
+                          <Route path="add-stations" element={<AddStation />} />
+                          <Route path="add-vehicle" element={<AddVehicle />} />
+                          <Route path="jobs" element={<JobAdverts />} />
+                          <Route
+                            path="manage-pricing"
+                            element={<ManagePricelist />}
+                          />
+                          <Route
+                            path="create-route"
+                            element={<CreateRoute />}
+                          />
+                          <Route path="reviews" element={<ManageReviews />} />
+                        </Route>
+                      </Route>
+                    </Route>
+                    <Route path="*" element={<NotFound />} />
+                  </Route>
+
+                  <Route element={<LoginRoute />}>
+                    <Route path="/login" element={<Login />} />
+                  </Route>
+                </Routes>
+              </NewWaybillProvider>
+            </BrowserRouter>
+          </div>
+        ) : (
+          <div className="w-full h-screen flex items-center justify-center">
+            <p>loading</p>
+          </div>
+        )}
+      </div>
+    );
+  } else return <p>loading</p>;
 }
 
 export default App;

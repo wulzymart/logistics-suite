@@ -1,6 +1,5 @@
 import React from "react";
 import { useUserContext } from "../contexts/CurrentUser.Context";
-import { useAppConfigContext } from "../contexts/AppConfig.context";
 import {
   collection,
   getCountFromServer,
@@ -13,13 +12,23 @@ import { useState } from "react";
 
 const Summary = () => {
   const { currentUser, stationName } = useUserContext();
-  const [staffOrdCt, setStaffOrdCt] = useState("");
-  const [statOrdCt, setStatOrdCt] = useState("");
-  const [statInOrdCt, setStatInOrdCt] = useState("");
-
+  const [staffOrdCt, setStaffOrdCt] = useState(0);
+  const [statOrdCt, setStatOrdCt] = useState(0);
+  const [statInOrdCt, setStatInOrdCt] = useState(0);
+  const ordersRef = collection(db, "orders");
   const today = new Date().toDateString();
+  //inbound warehoused destination arrived
+  const [inWhd, setInWhd] = useState(0);
+  //inbound warehouse transhiped arrived
+  const [inWht, setInWht] = useState(0);
+  // outbound trip assigned, not dispached
+  const [outWhtnoD, setoutWhtnoD] = useState(0);
+  // outbound order just received
+  const [outWhnew, setOutWhnew] = useState(0);
+
+  // outbound transhipped warehouse trip assigned no dispatch
+  const [trOutWh, setTrOutWh] = useState(0);
   const staffOrderCount = async () => {
-    const ordersRef = collection(db, "orders");
     const q = query(
       ordersRef,
 
@@ -30,7 +39,6 @@ const Summary = () => {
     setStaffOrdCt(snapshot.data().count);
   };
   const stationOrderCount = async () => {
-    const ordersRef = collection(db, "orders");
     const q = query(
       ordersRef,
 
@@ -41,7 +49,6 @@ const Summary = () => {
     setStatOrdCt(snapshot.data().count);
   };
   const stationInboundOrderCount = async () => {
-    const ordersRef = collection(db, "orders");
     const q = query(
       ordersRef,
 
@@ -54,7 +61,40 @@ const Summary = () => {
   staffOrderCount();
   stationOrderCount();
   stationInboundOrderCount();
-
+  const getQuery = async (query, setCount) => {
+    const snapshot = await getCountFromServer(query);
+    setCount(snapshot.data().count);
+  };
+  const warehouseinDestQuery = query(
+    ordersRef,
+    where("destinationStation", "==", stationName),
+    where("deliveryStatus", "==", "Arrived at Destination Station")
+  );
+  const warehouseinTrQuery = query(
+    ordersRef,
+    where("transferStation", "==", stationName),
+    where("deliveryStatus", "==", "At transfer station")
+  );
+  const warehouseOutnewQuery = query(
+    ordersRef,
+    where("originStation", "==", stationName),
+    where("deliveryStatus", "==", "Order Received")
+  );
+  const warehouseOutnoDispatchQuery = query(
+    ordersRef,
+    where("originStation", "==", stationName),
+    where("deliveryStatus", "==", "Booked for Dispatch")
+  );
+  const warehouseOutnoDispatchTrQuery = query(
+    ordersRef,
+    where("transferStation", "==", stationName),
+    where("deliveryStatus", "==", "Set to leave transfer station")
+  );
+  getQuery(warehouseinDestQuery, setInWhd);
+  getQuery(warehouseinTrQuery, setInWht);
+  getQuery(warehouseOutnewQuery, setOutWhnew);
+  getQuery(warehouseOutnoDispatchQuery, setoutWhtnoD);
+  getQuery(warehouseOutnoDispatchTrQuery, setTrOutWh);
   const userData = {
     "Station Name": stationName,
     "User ID": currentUser.id,
@@ -62,8 +102,8 @@ const Summary = () => {
     Rank: currentUser.rank,
     "Staff Order Count": staffOrdCt,
     "Station Order count": statOrdCt,
-    "Station Incoming Count": 0,
-    "Station Warehouse": statInOrdCt ? statInOrdCt : 0,
+    "Station Incoming Count": statInOrdCt,
+    "Station Warehouse": inWhd + inWht + outWhtnoD + outWhnew + trOutWh,
   };
   return (
     <div>

@@ -74,7 +74,9 @@ const Staffs = () => {
       headerName: " Id",
       width: 150,
       renderCell: (param) => {
-        return <Link to={`/admin/staff/${param.value}`}>{param.value}</Link>;
+        return (
+          <Link to={`/super-admin/staff/${param.value}`}>{param.value}</Link>
+        );
       },
     },
     {
