@@ -21,7 +21,6 @@ const ManageReviews = () => {
         const tempData = [];
         snapshots.forEach((snapshot) => tempData.push(snapshot.data()));
         setReviews(tempData);
-        console.log(tempData);
         setIsLoading(false);
       }
     );
