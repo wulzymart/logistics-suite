@@ -1,4 +1,4 @@
-import { doc, setDoc } from "firebase/firestore";
+import { doc, serverTimestamp, setDoc } from "firebase/firestore";
 import React from "react";
 import { useState } from "react";
 import { Link } from "react-router-dom";
@@ -43,7 +43,7 @@ const InBound = () => {
       if (deliveryStatus === "Dispatched") {
         history.push({
           info: `Order Recieved by ${currentUser.displayName}`,
-          time: date.toLocaleString(),
+          time: date.toLocaleString("en-US"),
         });
         const trackingMessage =
           deliveryType === "Station to Delivery man" ||
@@ -62,14 +62,19 @@ const InBound = () => {
           info: transshipIn
             ? "Order arrived at transfer station, will be on the way to destination station soon"
             : trackingMessage,
-          time: date.toLocaleString(),
+          time: date.toLocaleString("en-US"),
         });
         const orderRef = doc(db, "orders", id);
         const arrivedStatus = "Arrived at Destination Station";
         if (!transshipIn) {
           setDoc(
             orderRef,
-            { deliveryStatus: arrivedStatus, trackingInfo, history },
+            {
+              deliveryStatus: arrivedStatus,
+              trackingInfo,
+              history,
+              arrivedAtDestinationStation: serverTimestamp(),
+            },
             { merge: true }
           );
         } else
@@ -81,6 +86,7 @@ const InBound = () => {
               history,
               transshipIn: false,
               transshipOut: true,
+              arrivedAtTransferStation: serverTimestamp(),
             },
             { merge: true }
           );
@@ -93,49 +99,10 @@ const InBound = () => {
         "Some of the Selected Orders are yet to be dispatched have already arrived"
       );
   };
-  const setDelivered = () => {
-    let uneditableOrders = false;
-    selectedIds.forEach((id) => {
-      const {
-        deliveryStatus,
 
-        history,
-        trackingInfo,
-      } = inRowsMap[id];
-
-      history.push({
-        info: `Order set as delivered by ${currentUser.displayName}`,
-        time: date.toLocaleString(),
-      });
-      if (
-        deliveryStatus === "Arrived at Destination Station" ||
-        deliveryStatus === "With last man delivery"
-      ) {
-        trackingInfo.push({
-          info: "Order delivered successfully",
-          time: date.toLocaleString(),
-        });
-        const orderRef = doc(db, "orders", id);
-        setDoc(
-          orderRef,
-          {
-            deliveryStatus: "Delivered",
-            trackingInfo,
-            history,
-          },
-          { merge: true }
-        );
-      } else {
-        uneditableOrders = true;
-      }
-    });
-    uneditableOrders &&
-      alert("Some of the Selected Orders are yet to arrive your location");
-  };
   const handleSubmit = () => {
     if (comparePin(pin, currentUser.pin)) {
       action === "arrived" && setArrived();
-      action === "delivered" && setDelivered();
       closeModal("pin-modal");
       closeModal("selectedOrders");
       setPin("");
@@ -293,17 +260,6 @@ const InBound = () => {
           }}
         >
           Receive Waybills
-        </CustomButton>
-
-        <CustomButton
-          handleClick={() => {
-            if (selectedIds.length) {
-              setAction("delivered");
-              openModal("selectedOrders");
-            } else alert("No selections made");
-          }}
-        >
-          Mark as Delivered
         </CustomButton>
       </div>
       <Modal id="selectedOrders" title="Confirm Selected Trips">

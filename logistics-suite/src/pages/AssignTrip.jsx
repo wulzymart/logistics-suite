@@ -54,9 +54,9 @@ const AssignTrip = () => {
   async function assignTrip() {
     if (comparePin(pin, currentUser.pin)) {
       const driverName = trips[tripId].driverName;
-      const attendantName = trips[tripId].attendantName;
+      const attendantName = trips[tripId].attendantName || "";
       const driverPhone = trips[tripId].driverPhone;
-      const attendantPhone = trips[tripId].attendantPhone;
+      const attendantPhone = trips[tripId].attendantPhone || "";
       let date = new Date();
 
       selectedIds.map(async (id) => {
@@ -66,14 +66,14 @@ const AssignTrip = () => {
           info: !transshipOut
             ? "Your order has been booked for dispatch, awaiting shipment"
             : "Your order has been assigned a new vehicle and will soon continue to the destination station",
-          time: date.toLocaleString(),
+          time: date.toLocaleString("en-US"),
         };
         trackingInfo.push(newTrackingInfo);
         const history = orders[id].history;
         const orderRef = doc(db, "orders", id);
         history.push({
           info: `Trip ${tripId} assigned by ${currentUser.displayName}`,
-          time: date.toLocaleString(),
+          time: date.toLocaleString("en-US"),
         });
 
         await setDoc(
@@ -225,7 +225,7 @@ const AssignTrip = () => {
           Object.assign(tempData, { [doc.data().id]: doc.data() });
           tempList.push(doc.data().id);
         });
-
+        console.log("loaded", tempData);
         setTrips(tempData);
         setTripsList(tempList);
       });

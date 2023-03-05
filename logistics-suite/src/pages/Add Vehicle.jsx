@@ -165,7 +165,7 @@ const AddVehicle = () => {
       </div>
       <CustomButton
         handleClick={() => {
-          if (brand && model && regNo && service) {
+          if (brand && model && service) {
             openModal("vehicle-modal");
           } else alert("Ensure all form details are filled before progressing");
         }}

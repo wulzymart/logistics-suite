@@ -50,6 +50,9 @@ import Station from "./pages/Station";
 import StationSummary from "./pages/StationSummary";
 import ManageReviews from "./pages/ManageReviews";
 import JobAdverts from "./pages/JobAdverts";
+import AddTripStaff from "./pages/AddTripStaff";
+import TripStaffs from "./pages/TripStaffs";
+import TripStaff from "./pages/TripStaff";
 
 function App() {
   const { currentMode } = useThemeContext();
@@ -120,8 +123,17 @@ function App() {
                             path="staff-registration"
                             element={<NewStaff />}
                           />
+                          <Route
+                            path="trip-staff-registration"
+                            element={<AddTripStaff />}
+                          />
                           <Route path="staff" element={<Staffs />} />
                           <Route path="staff/:id" element={<Staff />} />
+                          <Route path="trip-staff" element={<TripStaffs />} />
+                          <Route
+                            path="trip-staff/:id"
+                            element={<TripStaff />}
+                          />
                           <Route
                             path="new-ecommerce-customer"
                             element={<RegisterEcommerce />}

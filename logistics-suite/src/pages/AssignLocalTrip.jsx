@@ -54,9 +54,9 @@ const AssignLocalTrip = () => {
   async function assignTrip() {
     if (comparePin(pin, currentUser.pin)) {
       const driverName = trips[tripId].driverName;
-      const attendantName = trips[tripId].attendantName;
+      const attendantName = trips[tripId].attendantName || "";
       const driverPhone = trips[tripId].driverPhone;
-      const attendantPhone = trips[tripId].attendantPhone;
+      const attendantPhone = trips[tripId].attendantPhone || "";
       let date = new Date();
 
       selectedIds.map(async (id) => {
@@ -67,14 +67,14 @@ const AssignLocalTrip = () => {
               ? "Your order will soon arrive at the destination address, please prepare all necessary documents for collection"
               : "Your order has been booked for dispatch, awaiting shipment",
 
-          time: date.toLocaleString(),
+          time: date.toLocaleString("en-US"),
         };
         trackingInfo.push(newTrackingInfo);
         const history = orders[id].history;
         const orderRef = doc(db, "orders", id);
         history.push({
           info: `Trip ${tripId} assigned by ${currentUser.displayName}`,
-          time: date.toLocaleString(),
+          time: date.toLocaleString("en-US"),
         });
 
         await setDoc(

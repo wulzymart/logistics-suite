@@ -2,12 +2,15 @@ import React from "react";
 import { useSelector } from "react-redux";
 
 import { default as Logo } from "../components/assets/fll1.png";
+import { useAppConfigContext } from "../contexts/AppConfig.context";
 import { useUserContext } from "../contexts/CurrentUser.Context";
 const OrderSummary = () => {
   const { currentUser } = useUserContext();
+  const { stations } = useAppConfigContext();
   const customer = useSelector((state) => state.customer);
   const order = useSelector((state) => state.order);
   const receiver = order.receiver;
+  const address = stations[order.originStation]?.address;
 
   return (
     <div className="">
@@ -19,9 +22,18 @@ const OrderSummary = () => {
           </h1>
           <p className="text-center text-md  text-[#ff2600] font-medium">
             Head Office: km 57, Agasa junction opposite Dr. Ado Ibrahim Building
-            Agasa Okene Kogi, Nigeria (+234)8167900003 (+234)8133434400
+            Agasa Okene Kogi, Nigeria
           </p>
-          <p className="text-center text-2xl font-bold">Branch Address</p>
+          {order.originStation !== "Head Office" && (
+            <p className="text-center text-[#ff2600] font-medium">
+              Branch Address: {`${address.streetAddress} ${address.state}`}
+            </p>
+          )}
+          <p className="text-center text-[#ff2600]">
+            (+234)8167900003 (+234)8133434400{" "}
+            {order.originStation !== "Head Office" &&
+              stations[order.originStation]?.phoneNumber1}
+          </p>
         </div>
       </div>
       <h1 className="text-center font-bold text-2xl mb-12">Waybill Summary</h1>
@@ -42,8 +54,10 @@ const OrderSummary = () => {
           <p>Payment Status: {order.paid ? "Paid" : "Awaiting Payment"}</p>
         </div>
         <div className="flex flex-col gap-3 w-full mb-8">
-          <p>Delivery type: {order.deliveryType}</p>
-          <p>Service type: {order.deliveryService}</p>
+          {order.deliveryType && <p>Delivery type: {order.deliveryType}</p>}
+          {order.deliveryService && (
+            <p>Service type: {order.deliveryService}</p>
+          )}
           <p>Origin Station: {order.originStation}</p>
           <p>
             Destination station:{" "}
@@ -52,13 +66,14 @@ const OrderSummary = () => {
               : "Intra City delivery"}
           </p>
           <p>
-            Trip Number: {order.trip?.id ? order.trip.id : "trip Not assigned"}
+            Trip Number:{" "}
+            {order.trip?.id ? order.trip.id : "Awaiting Trip Assignment"}
           </p>
           <p>
             Driver details:{" "}
             {order.trip?.driver
               ? order.trip.diverName + " " + order.trip.driverPhone
-              : "Trip not assigned"}{" "}
+              : "Awaiting Trip Assignment"}{" "}
           </p>
         </div>
       </div>
@@ -150,11 +165,11 @@ const OrderSummary = () => {
         <div className="flex flex-col md:flex-row w-full justify-between">
           <div className="flex gap-2">
             <span className="font-medium">Value:</span>
-            <span>{order.item.value}</span>
+            <span>{order.item.value}NGN</span>
           </div>
           <div className="flex gap-2">
             <span className="font-medium">weight:</span>
-            <span>{order.item.weight}</span>
+            <span>{order.item.weight}KG</span>
           </div>
           <div className="flex gap-2">
             <span className="font-medium">Quantity:</span>
@@ -186,7 +201,7 @@ const OrderSummary = () => {
           </div>
           <div className="flex gap-2">
             <span className="font-medium">Insurance:</span>
-            <span>{order.insurance} NGN</span>
+            <span>{order.insurance || 0} NGN</span>
           </div>
           <div className="flex gap-2">
             <span className="font-medium">VAT:</span>

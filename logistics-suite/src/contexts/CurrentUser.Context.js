@@ -25,6 +25,11 @@ export const UserContextProvider = ({ children }) => {
               .get(`https://ls.webcouture.com.ng/users/?uid=${uid}`)
               .then((data) => {
                 const loggedInUser = data.data;
+                (loggedInUser.role === "Driver" ||
+                  loggedInUser === "Vehicle Attendant") &&
+                  signOut(auth).then(() => {
+                    setCurrentUser(null);
+                  });
                 setIsLoading(false);
                 setCurrentUser(loggedInUser);
                 setStationName(loggedInUser.station);

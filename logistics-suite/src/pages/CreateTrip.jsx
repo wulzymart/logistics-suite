@@ -1,4 +1,12 @@
-import { doc, serverTimestamp, setDoc } from "firebase/firestore";
+import {
+  collection,
+  doc,
+  getDocs,
+  query,
+  serverTimestamp,
+  setDoc,
+  where,
+} from "firebase/firestore";
 import React, { useState } from "react";
 
 import { idGenerator } from "../AppBrain";
@@ -17,16 +25,17 @@ const CreateTrip = () => {
   const {
     stationsList,
     routesList,
-    attendantsList,
-    attendants,
-    driversList,
-    drivers,
+
     intVehList,
     statVehList,
     comparePin,
   } = useAppConfigContext();
+  const [drivers, setDrivers] = useState({});
+  const [driversList, setdriversList] = useState([]);
+  const [attendants, setattendants] = useState({});
+  const [attendantsList, setattendantsList] = useState([]);
   const [id, setId] = useState(idGenerator(3));
-  const { currentUser } = useUserContext();
+  const { currentUser, stationName } = useUserContext();
 
   const [tripId, setTripId] = useState("");
   const setNameId = (name) => {
@@ -35,7 +44,6 @@ const CreateTrip = () => {
   };
   const [tripName, setTripName] = useState("");
   const [tripType, setTripType] = useState("");
-  const [serviceType, setServiceType] = useState("");
   const [originStation, setOriginStation] = useState("");
   const [destinationStation, setDestinationStation] = useState("");
   const [route, setRoute] = useState("");
@@ -43,13 +51,13 @@ const CreateTrip = () => {
   const [driver, setDriver] = useState("");
   const [attendant, setAttendant] = useState("");
   const [pin, setPin] = useState("");
-  async function saveTrip() {
+  function saveTrip() {
     if (comparePin(pin, currentUser.pin)) {
       const trip = {
         id: tripId,
         name: tripName,
         tripType,
-        serviceType,
+
         originStation,
         destinationStation,
         route,
@@ -62,28 +70,78 @@ const CreateTrip = () => {
           : "",
       };
       const tripRef = doc(db, "trips", trip.id);
-      try {
-        await setDoc(tripRef, { ...trip, dateCreated: serverTimestamp() });
-        alert("New trip Successfully Created");
-        closeModal("pin-modal");
-        closeModal("create-trip-modal");
-        setPin("");
-        setId(idGenerator(3));
-        setTripName("");
-        setTripId("");
-        setTripType("");
-        setServiceType("");
-        setOriginStation("");
-        setDestinationStation("");
-        setRoute("");
-        setVehicle("");
-        setDriver("");
-        setAttendant("");
-      } catch (error) {
-        alert("error creating trip try again");
-      }
+
+      setDoc(tripRef, { ...trip, dateCreated: serverTimestamp() })
+        .then(() => {
+          alert("New trip Successfully Created");
+          closeModal("pin-modal");
+          closeModal("create-trip-modal");
+          setPin("");
+          setId(idGenerator(3));
+          setTripName("");
+          setTripId("");
+          setTripType("");
+          setOriginStation("");
+          setDestinationStation("");
+          setRoute("");
+          setVehicle("");
+          setDriver("");
+          setAttendant("");
+        })
+        .catch((error) => error && alert("error creating trip try again"));
     } else alert("Wrong user pin");
   }
+  const tripStaffRef = collection(db, "tripStaff");
+  const localDriversQuery = query(
+    tripStaffRef,
+    where("coverage", "==", "Local Station"),
+    where("role", "==", "Driver"),
+    where("station", "==", stationName)
+  );
+  const localAttendantsQuery = query(
+    tripStaffRef,
+    where("coverage", "==", "Local Station"),
+    where("role", "==", "Vehicle Attendant"),
+    where("station", "==", stationName)
+  );
+  const IntDriversQuery = query(
+    tripStaffRef,
+    where("coverage", "==", "Interstation"),
+    where("role", "==", "Driver")
+  );
+  const IntAttendantsQuery = query(
+    tripStaffRef,
+    where("coverage", "==", "Interstation"),
+    where("role", "==", "Vehicle Attendant")
+  );
+  const getDrivers = async (queryItem) => {
+    await getDocs(queryItem).then((snapshots) => {
+      const tempObject = {};
+      const tempList = [];
+      snapshots.forEach((snapshot) => {
+        Object.assign(tempObject, {
+          [snapshot.data().displayName]: snapshot.data(),
+        });
+        tempList.push(snapshot.data().displayName);
+      });
+      setdriversList(tempList);
+      setDrivers(tempObject);
+    });
+  };
+  const getAttendants = async (queryItem) => {
+    await getDocs(queryItem).then((snapshots) => {
+      const tempObject = {};
+      const tempList = [];
+      snapshots.forEach((snapshot) => {
+        Object.assign(tempObject, {
+          [snapshot.data().displayName]: snapshot.data(),
+        });
+        tempList.push(snapshot.data().displayName);
+      });
+      setattendantsList(tempList);
+      setattendants(tempObject);
+    });
+  };
   return (
     <div>
       <h1 className="text-3xl font-bold text-center mb-8">Create a new Trip</h1>
@@ -114,22 +172,16 @@ const CreateTrip = () => {
               if (value === "Local Trip") {
                 setRoute("");
                 setDestinationStation("");
+                getDrivers(localDriversQuery);
+                getAttendants(localAttendantsQuery);
+              } else if (value === "Station-Station") {
+                getDrivers(IntDriversQuery);
+                getAttendants(IntAttendantsQuery);
               }
             }}
             children="Select One"
           />
         </div>
-        {tripType !== "Local Trip" && (
-          <div className="w-full ">
-            <p>Service Type</p>
-            <Select
-              options={["Regular", "Express"]}
-              value={serviceType}
-              handleChange={(e) => setServiceType(e.target.value)}
-              children="Select One"
-            />
-          </div>
-        )}
       </div>
       <div className="flex flex-col md:flex-row gap-8 mb-8">
         <div className="w-full">
@@ -196,7 +248,7 @@ const CreateTrip = () => {
             options={attendantsList}
             value={attendant}
             handleChange={(e) => setAttendant(e.target.value)}
-            children="Select One"
+            children="None"
           />
         </div>
       </div>
@@ -207,7 +259,6 @@ const CreateTrip = () => {
               if (
                 tripType === "Station-Station" &&
                 destinationStation &&
-                serviceType &&
                 route &&
                 attendant
               ) {
@@ -235,9 +286,6 @@ const CreateTrip = () => {
             <p>
               Trip Type: <span>{tripType}</span>
             </p>
-            <p>
-              Service Type: <span>{serviceType}</span>
-            </p>
           </div>
           <div className="flex justify-between gap-10">
             <p>
@@ -264,7 +312,8 @@ const CreateTrip = () => {
               Driver's Name: <span>{driver}</span>
             </p>
             <p>
-              Driver's Contact: <span>{drivers[driver]?.phoneNumber}</span>
+              Driver's Contact:{" "}
+              <span>{drivers[driver]?.phoneNumber || ""}</span>
             </p>
           </div>
           {attendant && (

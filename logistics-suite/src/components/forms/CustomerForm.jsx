@@ -65,6 +65,7 @@ const CustomerForm = () => {
                   inputProps={{
                     required: true,
                     autoFocus: true,
+                    maxLength: 18,
                   }}
                   country={"ng"}
                   onlyCountries={["ng"]}

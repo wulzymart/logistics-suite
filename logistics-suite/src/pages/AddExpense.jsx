@@ -20,7 +20,7 @@ const AddExpense = () => {
     { purpose: "Marketing", max: 1500 },
     { purpose: "Loading" },
     { purpose: "Unloading" },
-    { purpose: "Trip Allowance", max: 7000 },
+    { purpose: "Trip Allowance" },
     { purpose: "Fueling" },
     { purpose: "Others" },
   ];

@@ -49,7 +49,9 @@ const PickupRequest = () => {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div className="text-gray-500 font-medium">Date Created:</div>
             <div>
-              {new Date(request.dateCreated.seconds * 1000).toLocaleString()}
+              {new Date(request.dateCreated.seconds * 1000).toLocaleString(
+                "en-US"
+              )}
             </div>
             <div className="text-gray-500 font-medium">Attended To:</div>
             <div>{request.attendedTo ? "Yes" : "No"}</div>

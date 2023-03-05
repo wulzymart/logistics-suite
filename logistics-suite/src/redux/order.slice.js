@@ -16,7 +16,7 @@ const initialState = {
   trackingInfo: [
     {
       info: "Order Accepted at Origin Station",
-      time: date.toLocaleString(),
+      time: date.toLocaleString("en-US"),
     },
   ],
   deliveryService: "",

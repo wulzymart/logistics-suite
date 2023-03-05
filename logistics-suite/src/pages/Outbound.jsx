@@ -161,7 +161,7 @@ const OutBound = () => {
         if (deliveryStatus === "Order Received") {
           history.push({
             info: `Order indicated for transhipment by ${currentUser.displayName}`,
-            time: date.toLocaleString(),
+            time: date.toLocaleString("en-US"),
           });
           const orderRef = doc(db, "orders", id);
           setDoc(
@@ -190,7 +190,7 @@ const OutBound = () => {
       ) {
         history.push({
           info: `Trip ${tripId} unassigned by ${currentUser.displayName}`,
-          time: date.toLocaleString(),
+          time: date.toLocaleString("en-US"),
         });
         const newTrackingInfo = [];
         !transshipOut
@@ -244,14 +244,14 @@ const OutBound = () => {
       ) {
         history.push({
           info: `Order set as dispatched by ${currentUser.displayName}`,
-          time: date.toLocaleString(),
+          time: date.toLocaleString("en-US"),
         });
 
         trackingInfo.push({
           info: !transshipOut
-            ? "Your order has been dispatched, It is now in transit, You will be notified when arrived"
+            ? "Your order has been dispatched, It is now on transit, You will be notified when arrived"
             : "Your order has departed transfer station for the destination station, you will be notified on arrival",
-          time: date.toLocaleString(),
+          time: date.toLocaleString("en-US"),
         });
         const orderRef = doc(db, "orders", id);
         setDoc(
@@ -259,6 +259,7 @@ const OutBound = () => {
           {
             deliveryStatus: "Dispatched",
             trackingInfo,
+            history,
           },
           { merge: true }
         );

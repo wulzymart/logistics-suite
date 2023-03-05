@@ -193,6 +193,10 @@ const OrderForm = () => {
                 placeholder="Phone Number*"
                 country={"ng"}
                 onlyCountries={["ng"]}
+                inputProps={{
+                  required: true,
+                  maxLength: 18,
+                }}
                 prefix="+"
                 value={order.receiver.phoneNumber}
                 required
@@ -279,7 +283,9 @@ const OrderForm = () => {
                       required
                       value={order.item.description}
                       handleChange={(e) =>
-                        dispatch(setItemDescription(e.target.value))
+                        dispatch(
+                          setItemDescription(e.target.value.toUpperCase())
+                        )
                       }
                       rows={5}
                     />
@@ -495,10 +501,12 @@ const OrderForm = () => {
             <p className=" font-medium text-xl">
               VAT: <span>{order.VAT} NGN</span>
             </p>
-            {order.insurance && (
+            {order.insurance ? (
               <p className=" font-medium text-xl">
                 Insurance: <span>{order.insurance} NGN</span>
               </p>
+            ) : (
+              ""
             )}
             <p className=" font-medium text-xl">
               Total: <span>{order.total} NGN</span>

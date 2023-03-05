@@ -144,7 +144,10 @@ const StaffReg = () => {
               }}
               containerClass={"!w-full !h-11 "}
               inputClass={"!w-full !min-h-full"}
-              required
+              inputProps={{
+                required: true,
+                maxLength: 18,
+              }}
             />
           </div>
         </div>
@@ -174,6 +177,9 @@ const StaffReg = () => {
               onChange={(phone) => dispatch(setNOKPhone(phone))}
               containerClass={"!w-full !h-11 "}
               inputClass={"!w-full !min-h-full"}
+              inputProps={{
+                maxLength: 18,
+              }}
             />
           </div>
         </div>
@@ -203,6 +209,9 @@ const StaffReg = () => {
               onChange={(phone) => dispatch(setGuarantor1Phone(phone))}
               containerClass={"!w-full !h-11 "}
               inputClass={"!w-full !min-h-full"}
+              inputProps={{
+                maxLength: 18,
+              }}
             />
           </div>
         </div>
@@ -232,6 +241,9 @@ const StaffReg = () => {
               onChange={(phone) => dispatch(setGuarantor2Phone(phone))}
               containerClass={"!w-full !h-11 "}
               inputClass={"!w-full !min-h-full"}
+              inputProps={{
+                maxLength: 18,
+              }}
             />
           </div>
         </div>

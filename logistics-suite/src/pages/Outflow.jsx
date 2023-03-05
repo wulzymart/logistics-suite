@@ -20,6 +20,7 @@ import {
 } from "firebase/firestore";
 import { db } from "../firebase/firebase";
 import TableGrid from "../components/TableGrid";
+import { GridToolbar } from "@mui/x-data-grid";
 
 const Outflow = () => {
   const date = new Date();
@@ -201,6 +202,9 @@ const Outflow = () => {
         </div>
         <div className="w-full">
           <TableGrid
+            components={{
+              Toolbar: GridToolbar,
+            }}
             columns={ecomColumns}
             rows={ecommRows}
             autoHeight
@@ -249,6 +253,9 @@ const Outflow = () => {
           rows={ppRows}
           autoHeight
           setSelectedId={() => {}}
+          components={{
+            Toolbar: GridToolbar,
+          }}
         />
       </div>
       <div className="flex justify-end mt-4">

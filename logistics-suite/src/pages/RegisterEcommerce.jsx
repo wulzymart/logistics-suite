@@ -88,7 +88,7 @@ const RegisterEcommerce = () => {
               history: [
                 {
                   info: `Customer created by ${currentUser.displayName}`,
-                  time: new Date().toLocaleString(),
+                  time: new Date().toLocaleString("en-US"),
                 },
               ],
             })

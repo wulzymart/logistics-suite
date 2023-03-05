@@ -52,6 +52,9 @@ const Profile = () => {
             .then(() => {
               alert("Password Update successful");
               closeModal("change-password");
+              setOldPassword("");
+              setNewPassword("");
+              setConfirmPassword("");
             })
             .catch((error) => {
               alert("PassWord Update Not successful", error.message);
@@ -70,6 +73,7 @@ const Profile = () => {
           currentUser.pin = getHashedPin(newPin);
           const userRef = doc(db, "users", currentUser.id);
           setDoc(userRef, currentUser);
+          alert("Pin changed successfully");
           closeModal("change-Pin");
           setOldPin("");
           setNewPin("");
@@ -79,7 +83,9 @@ const Profile = () => {
         currentUser.pin = getHashedPin(newPin);
         const userRef = doc(db, "users", currentUser.id);
         setDoc(userRef, currentUser);
+        alert("Pin added successfully");
         closeModal("change-Pin");
+
         setNewPin("");
         setConfirmPin("");
       }
@@ -228,7 +234,13 @@ const Profile = () => {
             handleChange={(e) => setConfirmPassword(e.target.value)}
           />
         </div>
-        <CustomButton handleClick={() => changePassword()}>Submit</CustomButton>
+        <CustomButton
+          handleClick={() => {
+            changePassword();
+          }}
+        >
+          Submit
+        </CustomButton>
       </Modal>
       <Modal title="Change Pin" id="change-Pin">
         {currentUser.pin && (

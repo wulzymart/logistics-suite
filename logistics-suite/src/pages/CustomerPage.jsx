@@ -36,7 +36,7 @@ import axios from "axios";
 const CustomerPage = () => {
   const paymentId = idGenerator(10);
   const { id } = useParams();
-  const today = new Date().toLocaleString();
+  const today = new Date().toLocaleString("en-US");
 
   const { states, statesList, comparePin } = useAppConfigContext();
   const { openModal, closeModal } = useThemeContext();

@@ -20,10 +20,6 @@ export const AppConfigContextProvider = ({ children }) => {
   const [stationsList, setStationsList] = useState(["Loading"]);
   const [routes, setRoutes] = useState({});
   const [routesList, setRoutesList] = useState(["Loading"]);
-  const [attendantsList, setAttendantsList] = useState(["Loading"]);
-  const [attendants, setAttendants] = useState("");
-  const [driversList, setDriversList] = useState(["Loading"]);
-  const [drivers, setDrivers] = useState({});
   const [interStateVehicles, setinterStateVehicles] = useState({});
   const [stationVehicles, setStationVehicles] = useState({});
   const [intVehList, setIntVehList] = useState(["loading"]);
@@ -68,23 +64,7 @@ export const AppConfigContextProvider = ({ children }) => {
       const list = Object.keys(stationsByName);
       setStationsList(list);
     });
-    axios
-      .get(`https://ls.webcouture.com.ng/users`, {
-        params: { role: "Vehicle Attendant" },
-      })
-      .then((data) => {
-        setAttendants(data.data);
-        setAttendantsList(Object.keys(data.data));
-      });
 
-    axios
-      .get(`https://ls.webcouture.com.ng/users`, {
-        params: { role: "Driver" },
-      })
-      .then((data) => {
-        setDrivers(data.data);
-        setDriversList(Object.keys(data.data));
-      });
     axios
       .get(`https://ls.webcouture.com.ng/vehicles`, {
         params: { type: "interState" },
@@ -115,10 +95,6 @@ export const AppConfigContextProvider = ({ children }) => {
         stationsList,
         routes,
         routesList,
-        attendantsList,
-        attendants,
-        driversList,
-        drivers,
         interStateVehicles,
         stationVehicles,
         intVehList,

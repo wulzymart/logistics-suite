@@ -151,14 +151,24 @@ export const links = [
         link: "/super-admin/new-ecommerce-customer",
       },
       {
-        name: "Add New Staff",
+        name: "Add Staff",
         icon: <FaUserPlus />,
         link: "/super-admin/staff-registration",
+      },
+      {
+        name: "Add Trip Staff",
+        icon: <FaUserPlus />,
+        link: "/super-admin/trip-staff-registration",
       },
       {
         name: "Staff",
         icon: <FaUsers />,
         link: "/super-admin/staff",
+      },
+      {
+        name: "Trip Staff",
+        icon: <FaUsers />,
+        link: "/super-admin/trip-staff",
       },
 
       {

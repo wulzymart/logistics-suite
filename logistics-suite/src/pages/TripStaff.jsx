@@ -6,22 +6,22 @@ import { useEffect } from "react";
 import { useState } from "react";
 import { useParams } from "react-router-dom";
 import CustomButton from "../components/button/button";
-import EditStaff from "../components/forms/EditStaff";
+import EditTripStaff from "../components/forms/EditTripStaff";
 import Header from "../components/Header";
 import { useUserContext } from "../contexts/CurrentUser.Context";
 import { useThemeContext } from "../contexts/themeContext";
 import { db } from "../firebase/firebase";
 
-const Staff = () => {
+const TripStaff = () => {
   const { id } = useParams();
 
   const { openModal } = useThemeContext();
   const { currentUser } = useUserContext();
   const [data, setData] = useState();
 
-  const userRef = doc(db, "users", id);
+  const tripStaffRef = doc(db, "tripStaff", id);
   const getUser = async () => {
-    await getDoc(userRef)
+    await getDoc(tripStaffRef)
       .then((doc) => setData(doc.data()))
       .catch((err) => alert(err));
   };
@@ -32,7 +32,7 @@ const Staff = () => {
 
   return data ? (
     <div>
-      <Header title="Staff Details" />
+      <Header title="Trip Staff Details" />
       <div className="flex flex-wrap">
         <div className="w-full md:w-1/2 p-2">
           <div className="p-2 bg-white dark:bg-slate-500 dark:text-white rounded-lg shadow">
@@ -49,30 +49,32 @@ const Staff = () => {
               </p>
 
               <p className="text-[15px] font-medium">Gender: {data.gender}</p>
-              <p className="text-[15px] font-medium">
-                Date of Birth:{" "}
-                {
-                  new Date(data.dateofBirth)
-                    .toLocaleString("en-US")
-                    .split(",")[0]
-                }
-              </p>
-              <p className="text-[15px] font-medium">
-                Age:{" "}
-                {new Date().getYear() - new Date(data.dateofBirth).getYear()}
-              </p>
+              {data.dateofBirth && (
+                <p className="text-[15px] font-medium">
+                  Date of Birth:{" "}
+                  {
+                    new Date(data.dateofBirth)
+                      .toLocaleString("en-US")
+                      .split(",")[0]
+                  }
+                </p>
+              )}
+              {data.dateofBirth && (
+                <p className="text-[15px] font-medium">
+                  Age:{" "}
+                  {new Date().getYear() - new Date(data.dateofBirth).getYear()}
+                </p>
+              )}
             </div>
           </div>
           <div className="p-2 bg-white dark:bg-slate-500 dark:text-white rounded-lg shadow mt-2">
             <h2 className="text-lg font-medium">Contact Information</h2>
             <div className="p-2">
-              <p className="text-[15px] font-medium">Email: {data.email}</p>
               <p className="text-[15px] font-medium">
                 Phone Number: {data.phoneNumber}
               </p>
               <p className="text-[15px] font-medium">
-                Address: {data.address.streetAddress}, {data.address.lga},{" "}
-                {data.address.state}
+                Address: {data.address.streetAddress}, {data.address.state}
               </p>
               <p className="text-[15px] font-medium">
                 Next of Kin: {data.nextOfKin.name}
@@ -86,24 +88,29 @@ const Staff = () => {
             <h2 className="text-lg font-medium">Bank Information</h2>
             <div className="p-2">
               <p className="text-[15px] font-medium">
-                Bank Name: {data.bank.bankName}
+                Bank Name: {data.bank?.bankName}
               </p>
               <p className="text-[15px] font-medium">
-                Account Number: {data.bank.accountNo}
+                Account Number: {data.bank?.accountNo}
               </p>
             </div>
           </div>
         </div>
         <div className="w-full md:w-1/2 p-2">
           <div className="p-2 bg-white dark:bg-slate-500 dark:text-white rounded-lg shadow ">
-            <h2 className="text-lg font-medium">Station Information</h2>
+            <h2 className="text-lg font-medium">Coverage Information</h2>
             <div className="p-2">
-              <p className="text-[15px] font-medium">Station: {data.station}</p>
-              <p className="text-[15px] font-medium">Role: {data.role}</p>
-
               <p className="text-[15px] font-medium">
-                App-Access level: {data.adminRight}
+                Coverage: {data.coverage}
               </p>
+              {data.coverage === "Local Station" ? (
+                <p className="text-[15px] font-medium">
+                  Station: {data.station}
+                </p>
+              ) : (
+                ""
+              )}
+              <p className="text-[15px] font-medium">Role: {data.role}</p>
             </div>
           </div>
 
@@ -152,11 +159,11 @@ const Staff = () => {
           </CustomButton>
         </div>
       </div>
-      {data && <EditStaff data={data} />}
+      {data && <EditTripStaff data={data} />}
     </div>
   ) : (
     <p>loading...</p>
   );
 };
 
-export default Staff;
+export default TripStaff;

@@ -68,7 +68,7 @@ const OrderSummaryPage = () => {
       history: [
         {
           info: `Order created by ${currentUser.displayName}`,
-          time: today.toLocaleString(),
+          time: today.toLocaleString("en-US"),
         },
       ],
     });
@@ -78,7 +78,7 @@ const OrderSummaryPage = () => {
 
       history.push({
         info: `${order.total}NGN deducted from Wallet for order ${order.id} by ${currentUser.displayName}`,
-        time: today.toLocaleString(),
+        time: today.toLocaleString("en-US"),
       });
 
       setDoc(doc(db, "walletPayout", paymentId), {
@@ -89,6 +89,9 @@ const OrderSummaryPage = () => {
         amount: +order.total,
         purpose: "Order Payment",
         orderId: order.id,
+        vat: order.VAT,
+        insurance: order.insurance,
+        net: order.subtotal,
         dateMade: serverTimestamp(),
         processedBy: currentUser.displayName,
         station: currentUser.station,
@@ -108,6 +111,9 @@ const OrderSummaryPage = () => {
         amount: +order.total,
         purpose: "Order Payment",
         orderId: order.id,
+        vat: order.VAT,
+        insurance: order.insurance,
+        net: order.subtotal,
         paymentMode,
         receiptInfo: receipt,
         dateMade: serverTimestamp(),
@@ -133,7 +139,7 @@ const OrderSummaryPage = () => {
         history: [
           {
             info: `Customer created by ${currentUser.displayName}`,
-            time: today.toLocaleString(),
+            time: today.toLocaleString("en-US"),
           },
         ],
       });

@@ -21,7 +21,7 @@ const PrintOrder = () => {
           </div>
         </div>
         <p className="text-right text-sm font-normal">
-          Printed on {new Date().toLocaleString()}
+          Printed on {new Date().toLocaleString("en-US")}
         </p>
       </div>
       <div className="p-20">
@@ -41,7 +41,7 @@ const PrintOrder = () => {
           </div>
         </div>
         <p className="text-right text-sm font-normal">
-          Printed on {new Date().toLocaleString()}
+          Printed on {new Date().toLocaleString("en-US")}
         </p>
       </div>
     </div>

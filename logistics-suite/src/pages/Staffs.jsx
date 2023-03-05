@@ -133,7 +133,7 @@ const Staffs = () => {
 
   return stationName ? (
     <div>
-      <Header title="View Staffs" />
+      <Header title="View Staff" />
       <div className=" bg-blue-200 p-4 rounded-lg flex flex-col md:flex-row justify-end gap-4">
         <div className="md:w-1/4 flex relative">
           <Select

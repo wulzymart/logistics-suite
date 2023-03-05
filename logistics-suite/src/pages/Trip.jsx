@@ -94,7 +94,7 @@ const Trip = () => {
             <div className="flex justify-between py-2">
               <div className="text-sm font-medium">Date Created:</div>
               <div className="text-sm">
-                {data.dateCreated.toDate().toLocaleString()}
+                {data.dateCreated.toDate().toLocaleString("en-US")}
               </div>
             </div>
             <div className="flex justify-between py-2">
@@ -125,11 +125,11 @@ const Trip = () => {
             </div>
             <div className="flex justify-between py-2">
               <div className="text-sm font-medium">Attendant Name:</div>
-              <div className="text-sm">{data.attendantName}</div>
+              <div className="text-sm">{data.attendantName || ""}</div>
             </div>
             <div className="flex justify-between py-2">
               <div className="text-sm font-medium">Attendant Phone:</div>
-              <div className="text-sm">{data.attendantPhone}</div>
+              <div className="text-sm">{data.attendantPhone || ""}</div>
             </div>
 
             <div className="flex justify-between py-2">

@@ -20,6 +20,7 @@ import {
 } from "firebase/firestore";
 import { db } from "../firebase/firebase";
 import TableGrid from "../components/TableGrid";
+import { GridToolbar } from "@mui/x-data-grid";
 
 const Inflow = () => {
   const date = new Date();
@@ -53,13 +54,29 @@ const Inflow = () => {
   function getDate(params) {
     return params.row.dateMade.toDate().toDateString();
   }
-  async function getQuery(queried, setRows, setTotal) {
+  async function getQuery(
+    queried,
+    setRows,
+    setTotal,
+    setVat,
+    setInsurance,
+    setNet
+  ) {
     await getDocs(queried).then((docs) => {
       const tempData = [];
       docs.forEach((doc) => tempData.push(doc.data()));
       const total = tempData.reduce((acc, data) => acc + +data.amount, 0);
+      const insurance = tempData.reduce(
+        (acc, data) => acc + +data.insurance,
+        0
+      );
+      const vat = tempData.reduce((acc, data) => acc + +data.vat, 0);
+      const net = tempData.reduce((acc, data) => acc + +data.net, 0);
       setRows(tempData);
       setTotal(total);
+      setVat(vat);
+      setNet(net);
+      setInsurance(insurance);
     });
   }
   const ecomColumns = [
@@ -107,7 +124,7 @@ const Inflow = () => {
       headerName: "Id",
       width: 150,
     },
-    { field: "amount", headerName: "Amount (NGN)", width: 150 },
+
     {
       field: "dateMade",
       headerName: "Date",
@@ -115,15 +132,21 @@ const Inflow = () => {
       width: 150,
     },
     {
-      field: "customerName",
-      headerName: "Customer's Name",
+      field: "VAT",
+      headerName: "VAT",
       width: 150,
     },
     {
-      field: "businessName",
-      headerName: "Business Name",
+      field: "insurance",
+      headerName: "Insurance",
       width: 150,
     },
+    {
+      field: "net",
+      headerName: "Net Income",
+      width: 150,
+    },
+    { field: "amount", headerName: "Amount (NGN)", width: 150 },
     {
       field: "purpose",
       headerName: "Purpose",
@@ -157,6 +180,9 @@ const Inflow = () => {
   const [ecomTotal, setEcomTotal] = useState(0);
   const [ppRows, setPprows] = useState([]);
   const [ppTotal, setPpTotal] = useState(0);
+  const [ppVat, setPpVat] = useState(0);
+  const [ppInsurance, setPpInsurance] = useState(0);
+  const [ppNet, setPpNet] = useState(0);
 
   return (
     <div>
@@ -210,6 +236,9 @@ const Inflow = () => {
         </div>
         <div className="w-full">
           <TableGrid
+            components={{
+              Toolbar: GridToolbar,
+            }}
             columns={ecomColumns}
             rows={ecommRows}
             autoHeight
@@ -234,7 +263,14 @@ const Inflow = () => {
             />
             <button
               onClick={async () => {
-                await getQuery(stationPointPayments, setPprows, setPpTotal);
+                await getQuery(
+                  stationPointPayments,
+                  setPprows,
+                  setPpTotal,
+                  setPpVat,
+                  setPpInsurance,
+                  setPpNet
+                );
               }}
               className="absolute right-0 top-[0.5px] bg-blue-800 text-xl font-bold text-white  rounded-lg h-10 w-10 flex justify-center items-center"
             >
@@ -244,7 +280,14 @@ const Inflow = () => {
           <div className="">
             <CustomButton
               handleClick={async () =>
-                await getQuery(allPointPayments, setPprows, setPpTotal)
+                await getQuery(
+                  allPointPayments,
+                  setPprows,
+                  setPpTotal,
+                  setPpVat,
+                  setPpInsurance,
+                  setPpNet
+                )
               }
             >
               All Stations
@@ -254,13 +297,25 @@ const Inflow = () => {
       </div>
       <div className="w-full">
         <TableGrid
+          components={{
+            Toolbar: GridToolbar,
+          }}
           columns={ppColumns}
           rows={ppRows}
           autoHeight
           setSelectedId={() => {}}
         />
       </div>
-      <div className="flex justify-end mt-4">
+      <div className="flex flex-col md:flex-row justify-end mt-4 gap-x-8 gap-y-4">
+        <p>
+          <span className="font-bold">Total VAT:</span> {ppVat}NGN
+        </p>
+        <p>
+          <span className="font-bold">Total Insurance:</span> {ppInsurance}NGN
+        </p>
+        <p>
+          <span className="font-bold">Total Net:</span> {ppNet}NGN
+        </p>
         <p>
           <span className="font-bold">Total:</span> {ppTotal}NGN
         </p>

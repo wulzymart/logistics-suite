@@ -20,6 +20,7 @@ import { useParams } from "react-router-dom";
 import { appBrain, idGenerator } from "../AppBrain";
 import CustomButton from "../components/button/button";
 import Header from "../components/Header";
+import Input from "../components/input/input";
 import Modal from "../components/Modal";
 import PinModal from "../components/PinModal";
 import Select from "../components/select-input/select";
@@ -46,6 +47,8 @@ const OrderPage = () => {
   const [tripsList, setTripsList] = useState([""]);
   const [action, setAction] = useState("");
   const [paymentMode, setPaymentMd] = useState("");
+  const [receivedByName, setReceivedByName] = useState("");
+  const [receivedByPhone, setReceivedByPhone] = useState("");
 
   const [receipt, setReceipt] = useState("");
   const [transferStation, setTransferStation] = useState("");
@@ -59,7 +62,7 @@ const OrderPage = () => {
     const { history } = order;
     history.push({
       info: `Payment details entered by ${currentUser.displayName}`,
-      time: date.toLocaleString(),
+      time: date.toLocaleString("en-US"),
     });
     setDoc(
       doc(db, "orders", id),
@@ -74,6 +77,9 @@ const OrderPage = () => {
       amount: +order.total,
       purpose: "Order Payment",
       orderId: order.id,
+      vat: order.VAT,
+      insurance: order.insurance,
+      net: order.subtotal,
       paymentMode,
       receiptInfo: receipt,
       dateMade: serverTimestamp(),
@@ -83,23 +89,23 @@ const OrderPage = () => {
   };
   function assignTrip() {
     const driverName = trips[tripId].driverName;
-    const attendantName = trips[tripId].attendantName;
+    const attendantName = trips[tripId].attendantName || "";
     const driverPhone = trips[tripId].driverPhone;
-    const attendantPhone = trips[tripId].attendantPhone;
+    const attendantPhone = trips[tripId].attendantPhone || "";
 
     const { transshipOut, trackingInfo, history } = order;
     const newTrackingInfo = {
       info: !transshipOut
         ? "Your order has been booked for dispatch, awaiting shipment"
         : "Your order has been assigned a new vehicle and will soon continue to the destination station",
-      time: date.toLocaleString(),
+      time: date.toLocaleString("en-US"),
     };
     trackingInfo.push(newTrackingInfo);
 
     const orderRef = doc(db, "orders", id);
     history.push({
       info: `Trip ${tripId} assigned by ${currentUser.displayName}`,
-      time: date.toLocaleString(),
+      time: date.toLocaleString("en-US"),
     });
 
     setDoc(
@@ -127,7 +133,7 @@ const OrderPage = () => {
     if (deliveryStatus === "Order Received") {
       history.push({
         info: `Order indicated for transhipment by ${currentUser.displayName}`,
-        time: date.toLocaleString(),
+        time: date.toLocaleString("en-US"),
       });
       const orderRef = doc(db, "orders", id);
       setDoc(
@@ -150,7 +156,7 @@ const OrderPage = () => {
     ) {
       history.push({
         info: `Trip ${tripId} unassigned by ${currentUser.displayName}`,
-        time: date.toLocaleString(),
+        time: date.toLocaleString("en-US"),
       });
       const newTrackingInfo = [];
       !transshipOut
@@ -198,14 +204,14 @@ const OrderPage = () => {
     ) {
       history.push({
         info: `Order set as dispatched by ${currentUser.displayName}`,
-        time: date.toLocaleString(),
+        time: date.toLocaleString("en-US"),
       });
 
       trackingInfo.push({
         info: !transshipOut
-          ? "Your order has been dispatched, It is now in transit, You will be notified when arrived"
+          ? "Your order has been dispatched, It is now on transit, You will be notified when arrived"
           : "Your order has departed transfer station for the destination station, you will be notified on arrival",
-        time: date.toLocaleString(),
+        time: date.toLocaleString("en-US"),
       });
       const orderRef = doc(db, "orders", id);
       setDoc(
@@ -233,7 +239,7 @@ const OrderPage = () => {
     if (deliveryStatus === "Dispatched") {
       history.push({
         info: `Order Recieved by ${currentUser.displayName}`,
-        time: date.toLocaleString(),
+        time: date.toLocaleString("en-US"),
       });
       const trackingMessage =
         deliveryType === "Station to Delivery man" ||
@@ -251,14 +257,19 @@ const OrderPage = () => {
         info: transshipIn
           ? "Order arrived at transfer station, will be on the way to destination station soon"
           : trackingMessage,
-        time: date.toLocaleString(),
+        time: date.toLocaleString("en-US"),
       });
       const orderRef = doc(db, "orders", id);
       const arrivedStatus = "Arrived at Destination Station";
       if (!transshipIn) {
         setDoc(
           orderRef,
-          { deliveryStatus: arrivedStatus, trackingInfo, history },
+          {
+            deliveryStatus: arrivedStatus,
+            trackingInfo,
+            history,
+            arrivedAtDestinationStation: serverTimestamp(),
+          },
           { merge: true }
         );
       } else
@@ -268,6 +279,7 @@ const OrderPage = () => {
             deliveryStatus: "At transfer station",
             trackingInfo,
             history,
+            arrivedAtTransferStation: serverTimestamp(),
             transshipIn: false,
             transshipOut: true,
           },
@@ -283,39 +295,37 @@ const OrderPage = () => {
 
     history.push({
       info: `Order set as delivered by ${currentUser.displayName}`,
-      time: date.toLocaleString(),
+      time: date.toLocaleString("en-US"),
     });
     trackingInfo.push({
       info: "Order delivered successfully",
-      time: date.toLocaleString(),
+      time: date.toLocaleString("en-US"),
     });
     const orderRef = doc(db, "orders", id);
-    if (intraCity === "Yes") {
-      setDoc(
-        orderRef,
-        {
-          deliveryStatus: "Delivered",
-          trackingInfo,
-          history,
-        },
-        { merge: true }
-      );
-    } else if (
+    if (
+      (intraCity === "Yes" && deliveryStatus === "Dispatched") ||
       deliveryStatus === "Arrived at Destination Station" ||
       deliveryStatus === "With last man delivery"
     ) {
       setDoc(
         orderRef,
         {
+          receivedByName,
+          deliveredAt: serverTimestamp(),
+          receivedByPhone,
           deliveryStatus: "Delivered",
           trackingInfo,
           history,
         },
         { merge: true }
-      );
+      ).then(() => {
+        setReceivedByName("");
+        setReceivedByPhone("");
+      });
     } else {
       alert("Order is yet to arrive your location");
     }
+    closeModal("set-received-by");
     closeModal("delivered");
   };
   const handleSubmit = () => {
@@ -356,14 +366,23 @@ const OrderPage = () => {
 
     const tripsRef = collection(db, "trips");
 
+    if (!order) return;
     const getTrips = async () => {
-      await getDocs(
-        query(
-          tripsRef,
-          where("originStation", "==", stationName),
-          where("dateCreated", ">=", Timestamp.fromDate(new Date(today)))
-        )
-      ).then((docs) => {
+      const queried =
+        order.intraCity === "No"
+          ? query(
+              tripsRef,
+              where("originStation", "==", stationName),
+              where("tripType", "==", "Station-Station"),
+              where("dateCreated", ">=", Timestamp.fromDate(new Date(today)))
+            )
+          : query(
+              tripsRef,
+              where("originStation", "==", stationName),
+              where("tripType", "==", "Local Trip"),
+              where("dateCreated", ">=", Timestamp.fromDate(new Date(today)))
+            );
+      await getDocs(queried).then((docs) => {
         const tempData = {};
         const tempList = [];
         docs.forEach((doc) => {
@@ -376,7 +395,7 @@ const OrderPage = () => {
       });
     };
     getTrips();
-  }, []);
+  }, [order]);
 
   return !notFound ? (
     <div>
@@ -433,7 +452,7 @@ const OrderPage = () => {
           </div>
 
           <div className="flex flex-col md:flex-row  gap-4 ">
-            <div className="flex flex-col  h-full md:w-1/3 bg-slate-100 border border-solid border-slate-300 p-8 rounded-lg ">
+            <div className="flex flex-col  md:w-1/3 bg-slate-100 border border-solid border-slate-300 p-8 rounded-lg ">
               {customer ? (
                 <div className="mb-10 pb-8 border-b border-b-black">
                   <p className="text-xl font-semibold mb-4">
@@ -464,8 +483,6 @@ const OrderPage = () => {
                     <span>
                       {customer.address.streetAddress +
                         " " +
-                        customer.address.lga +
-                        " " +
                         customer.address.state}
                     </span>
                   </p>
@@ -495,8 +512,6 @@ const OrderPage = () => {
                   <span>Address:</span>
                   <span>
                     {Receiver.address.streetAddress +
-                      " " +
-                      Receiver.address.lga +
                       " " +
                       Receiver.address.state}
                   </span>
@@ -611,14 +626,18 @@ const OrderPage = () => {
                     <span>Driver's Phone: </span>
                     <span>{order.driver?.phone}</span>
                   </p>
-                  <p className="w-42">
-                    <span>Attendant's Name: </span>
-                    <span>{order.attendant?.name}</span>
-                  </p>
-                  <p className="w-42">
-                    <span>Attendant's Phone: </span>
-                    <span>{order.attendant?.phone}</span>
-                  </p>
+                  {order.attendant?.name && (
+                    <p className="w-42">
+                      <span>Attendant's Name: </span>
+                      <span>{order.attendant.name}</span>
+                    </p>
+                  )}
+                  {order.attendant?.phone && (
+                    <p className="w-42">
+                      <span>Attendant's Phone: </span>
+                      <span>{order.attendant.phone}</span>
+                    </p>
+                  )}
                 </div>
               </div>
               <div className=" bg-blue-500 text-white w-full p-8 rounded-lg mb-4">
@@ -666,6 +685,16 @@ const OrderPage = () => {
                   </p>
                 </div>
               </div>
+              {order.subReceiverName && (
+                <div className=" bg-red-500 shadow-2xl text-white w-full italic p-8 rounded-lg mb-4">
+                  <p className="text-lg font-medium">
+                    {order.subReceiverName} with phone number{" "}
+                    {order.subReceiverPhone} has been assigned to picked up the
+                    order. Please give a confirmatory call to the receiver.
+                  </p>
+                </div>
+              )}
+
               <div className=" bg-blue-500 text-white w-full p-8 rounded-lg mb-4">
                 <p className="text-xl font-semibold mb-8">
                   Tracking and Delivery
@@ -690,6 +719,17 @@ const OrderPage = () => {
                   ))}
                 </div>
               </div>
+
+              {order.receivedByName ? (
+                <div className=" bg-blue-500 shadow-2xl text-white w-full p-8 rounded-lg mb-4">
+                  <p className="text-lg font-medium">
+                    {order.receivedByName} with phone number{" "}
+                    {order.receivedByPhone} has picked up the order
+                  </p>
+                </div>
+              ) : (
+                ""
+              )}
             </div>
           </div>
           <div className="w-full rounded-lg p-8 bg-blue-200 flex flex-wrap justify-around gap-y-4">
@@ -872,19 +912,66 @@ const OrderPage = () => {
             </CustomButton>
           </Modal>
           <Modal id="delivered" title="Confirm action">
-            <div className="p-8 mb-8">
-              <p className="text-xl font-bold">Set order as Delivered.</p>
-              <p className="text-red-600">Note: action is not reversible</p>
-            </div>
-            <CustomButton
-              handleClick={() => {
-                openModal("pin-modal");
+            <div className=" w-full p-8 rounded-lg mb-4">
+              <p className="text-xl font-semibold">Order Received by</p>
+              <p className=" mb-8">
+                Please enter the name and phone number of the person who
+                received the order
+              </p>
+              <div className="flex flex-col md:flex-row gap-x-8 gap-y-4 justify-around">
+                <div className="flex gap-2 items-center">
+                  <p className="font-bold mb-4">Name:</p>
+                  <Input
+                    value={receivedByName}
+                    handleChange={(e) => {
+                      setReceivedByName(e.target.value);
+                      console.log(e.target.value);
+                    }}
+                  />
+                </div>
+                <div className="flex gap-2 items-center">
+                  <p className="font-bold mb-4">Phone:</p>
+                  <Input
+                    value={receivedByPhone}
+                    handleChange={(e) => {
+                      setReceivedByPhone(e.target.value);
+                    }}
+                  />
+                </div>
+              </div>
+              <Modal id="set-received-by" title="Confirm Receiver">
+                <div className="text-gray-700 w-[300px] mx-auto md:w-[400px]">
+                  <p className="text-center">
+                    Order was picked up by {receivedByName} with phone number{" "}
+                    {receivedByPhone}
+                  </p>
 
-                setAction("delivered");
-              }}
-            >
-              Proceed
-            </CustomButton>
+                  <CustomButton
+                    handleClick={() => {
+                      openModal("pin-modal");
+
+                      setAction("delivered");
+                    }}
+                  >
+                    Proceed
+                  </CustomButton>
+                </div>
+              </Modal>
+              <div className="flex justify-end mt-4">
+                <button
+                  onClick={() => {
+                    if (!receivedByName || !receivedByPhone) {
+                      alert("please fill all required fields");
+                      return;
+                    }
+                    openModal("set-received-by");
+                  }}
+                  className="py-2 px-4 bg-blue-600 text-white rounded-lg"
+                >
+                  Submit
+                </button>
+              </div>
+            </div>
           </Modal>
           <PinModal
             pin={pin}
