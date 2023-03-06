@@ -69,13 +69,6 @@ const StationSummary = () => {
 
       width: 150,
     },
-    {
-      field: "receiverName",
-      headerName: "Receiver's Name",
-
-      width: 150,
-      valueGetter: getReceiverName,
-    },
 
     {
       field: "tripId",
@@ -84,25 +77,20 @@ const StationSummary = () => {
       width: 150,
     },
     {
-      field: "deliveryStatus",
-      headerName: "Delivery Status",
-
+      headerName: "Time in",
       width: 150,
-    },
-    {
-      field: "paid",
-      headerName: "Payment Status",
-      width: 150,
-      valueGetter: getPaymentStatus,
-      renderCell: (param) => (
-        <p
-          className={`${
-            param.value === "Unpaid" ? "text-red-500" : "text-green-800"
-          }`}
-        >
-          {param.value}
-        </p>
-      ),
+      valueGetter: (params) => {
+        const {
+          dateCreated,
+          arrivedAtDestinationStation,
+          arrivedAtTransferStation,
+        } = params.row;
+        return !arrivedAtDestinationStation || !arrivedAtTransferStation
+          ? dateCreated.toDate().toDateString()
+          : arrivedAtDestinationStation
+          ? arrivedAtDestinationStation.toDate().toDateString()
+          : arrivedAtTransferStation.toDate().toDateString();
+      },
     },
   ];
   const outboundColumns = [

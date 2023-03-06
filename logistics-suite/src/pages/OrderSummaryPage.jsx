@@ -189,7 +189,16 @@ const OrderSummaryPage = () => {
       {paymentSet ? (
         saved ? (
           <div className="w-full flex flex-col md:flex-row justify-center gap-8 ">
-            <Link to="/print-waybill" target="blank">
+            <Link
+              to="/print-waybill"
+              target="_blank"
+              onClick={() => {
+                localStorage.setItem(
+                  "state",
+                  JSON.stringify({ order, customer })
+                );
+              }}
+            >
               <CustomButton>Print Order</CustomButton>
             </Link>
             <CustomButton

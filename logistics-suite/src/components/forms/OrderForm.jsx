@@ -43,6 +43,7 @@ import { useNewWaybillContext } from "../../contexts/NewWaybillContext";
 
 const OrderForm = () => {
   const [orderid] = useState(idGenerator(9));
+
   const { currentUser } = useUserContext();
   const [originStateCode, setOriginStateCode] = useState("");
   const [destinationStateCode, setDestinationStateCode] = useState("");
@@ -63,6 +64,9 @@ const OrderForm = () => {
     );
   };
   const Reduction = order.intraCity === "Yes" ? 0.6 : 1;
+  const ecom = 0.6;
+  const priceFactor =
+    customer.customerType === "E-commerce" ? ecom : 1 * Reduction;
   return (
     newCustomer &&
     pricing && (
@@ -97,6 +101,13 @@ const OrderForm = () => {
                       setOriginStateCode(
                         stations[currentUser.station].shortCode
                       );
+                      e.target.value === "Yes"
+                        ? dispatch(
+                            setReceiverState(
+                              stations[currentUser.station].address.state
+                            )
+                          )
+                        : setReceiverState("");
                     }}
                     children={"Select one"}
                   />
@@ -216,6 +227,7 @@ const OrderForm = () => {
                 <Select
                   name={"receiverState"}
                   options={statesList}
+                  disabled={order.intraCity === "Yes"}
                   required
                   value={order.receiver.address.state}
                   handleChange={(e) => {
@@ -318,13 +330,13 @@ const OrderForm = () => {
                           pricing[shipmentCartegory]?.price &&
                             dispatch(
                               setFreightPrice(
-                                pricing[shipmentCartegory].price * Reduction
+                                pricing[shipmentCartegory].price * priceFactor
                               )
                             );
                           pricing[shipmentCartegory]?.price &&
                             dispatch(
                               setSubtotal(
-                                pricing[shipmentCartegory].price * Reduction
+                                pricing[shipmentCartegory].price * priceFactor
                               )
                             );
                           pricing[shipmentCartegory]?.price &&
@@ -332,7 +344,7 @@ const OrderForm = () => {
                               setVAT(
                                 appBrain.vat *
                                   pricing[shipmentCartegory].price *
-                                  Reduction
+                                  priceFactor
                               )
                             );
                         }}
@@ -376,7 +388,7 @@ const OrderForm = () => {
                               const subtotal =
                                 e.target.value *
                                 pricing[order.item.cartegory].ppw *
-                                Reduction;
+                                priceFactor;
 
                               dispatch(setFreightPrice(subtotal));
                               dispatch(setSubtotal(subtotal));
@@ -493,11 +505,7 @@ const OrderForm = () => {
             <p className=" font-medium text-xl">
               Subtotal: <span>{order.subtotal} NGN</span>
             </p>
-            {customer.customerType === "E-commerce" && (
-              <p className=" font-medium text-xl">
-                E-commerce Discount: <span>{0.4 * order.subtotal} NGN</span>
-              </p>
-            )}
+
             <p className=" font-medium text-xl">
               VAT: <span>{order.VAT} NGN</span>
             </p>
@@ -515,15 +523,9 @@ const OrderForm = () => {
           <div className="mt-8">
             <CustomButton
               handleClick={() => {
-                dispatch(setProcessedBy(currentUser.id));
+                dispatch(setProcessedBy(currentUser.displayName));
                 dispatch(
-                  setTotal(
-                    (customer.customerType === "E-commerce"
-                      ? 0.6 * order.subtotal
-                      : order.subtotal) +
-                      order.VAT +
-                      order.insurance
-                  )
+                  setTotal(order.subtotal + order.VAT + order.insurance)
                 );
 
                 setId();

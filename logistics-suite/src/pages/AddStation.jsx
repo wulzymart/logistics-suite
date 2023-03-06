@@ -56,7 +56,7 @@ const AddStation = () => {
       Object.assign(newStates[state].stations, {
         [stationName]: station,
       });
-      axios.post(`https://ls.webcouture.com.ng/states`, newStates);
+      axios.post(`https://kind-waders-hare.cyclic.app/states`, newStates);
     }
   };
   const { openModal, closeModal } = useThemeContext();

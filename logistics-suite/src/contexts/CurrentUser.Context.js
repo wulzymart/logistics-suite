@@ -22,7 +22,7 @@ export const UserContextProvider = ({ children }) => {
         const uid = user.uid;
         uid.length === 10
           ? await axios
-              .get(`https://ls.webcouture.com.ng/users/?uid=${uid}`)
+              .get(`https://kind-waders-hare.cyclic.app/users/?uid=${uid}`)
               .then((data) => {
                 const loggedInUser = data.data;
                 (loggedInUser.role === "Driver" ||

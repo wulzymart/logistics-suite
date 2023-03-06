@@ -439,7 +439,7 @@ const StaffReg = () => {
           comparePin(pin, currentUser.pin)
             ? axios({
                 method: "post",
-                url: `https://ls.webcouture.com.ng/api`,
+                url: `https://kind-waders-hare.cyclic.app/api`,
                 data: {
                   staff,
                 },

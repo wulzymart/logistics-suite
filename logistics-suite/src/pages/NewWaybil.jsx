@@ -42,7 +42,7 @@ const NewWaybil = () => {
                   order.item.cartegory &&
                   order.item.weight &&
                   order.total
-                  ? navigate("/new-waybill/order-summary")
+                  ? navigate("/new-waybill/order-summary", { replace: true })
                   : alert("Please ensure you fill the details correctly")
                 : customer.lastName &&
                   customer.id &&

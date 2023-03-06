@@ -59,7 +59,7 @@ const RegisterEcommerce = () => {
         const paymentId = idGenerator(10);
         axios({
           method: "post",
-          url: `https://ls.webcouture.com.ng/ecommerce-user`,
+          url: `https://kind-waders-hare.cyclic.app/ecommerce-user`,
           data: {
             customer,
           },

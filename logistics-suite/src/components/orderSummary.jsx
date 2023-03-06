@@ -182,12 +182,16 @@ const OrderSummary = () => {
         <div className="my-8 flex flex-col gap-5 p-5 border-solid border-2 border-gray-800  dark:border-white">
           <h2 className="text-xl font-medium">Additional Charges</h2>
           <div className="flex flex-col md:flex-row flex-wrap w-full justify-between">
-            {Object.keys(order.additionalCharges).map((charge, i) => (
-              <div key={i} className="flex gap-2">
-                <span className="font-medium">{charge}:</span>
-                <span>{order.additionalCharges[charge]} NGN</span>
-              </div>
-            ))}
+            {Object.keys(order.additionalCharges).map((charge, i) =>
+              order.additionalCharges[charge] ? (
+                <div key={i} className="flex gap-2">
+                  <span className="font-medium">{charge}:</span>
+                  <span>{order.additionalCharges[charge]} NGN</span>
+                </div>
+              ) : (
+                ""
+              )
+            )}
           </div>
         </div>
       )}

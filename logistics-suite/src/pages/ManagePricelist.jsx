@@ -29,7 +29,7 @@ const ManagePricelist = () => {
     comparePin(pin, currentUser.pin)
       ? axios({
           method: "post",
-          url: `https://ls.webcouture.com.ng/pricing`,
+          url: `https://kind-waders-hare.cyclic.app/pricing`,
           data: {
             pricing_,
           },
@@ -45,9 +45,7 @@ const ManagePricelist = () => {
     setPin("");
     closeModal("pin-modal");
   };
-  useEffect(() => {
-   
-  }, [pricing_]);
+  useEffect(() => {}, [pricing_]);
   return (
     pricingList && (
       <div>
@@ -102,7 +100,7 @@ const ManagePricelist = () => {
                       Object.assign(newp, { [priItem]: pricing_[priItem] });
                     }
                   });
-                 
+
                   setPricing(newp);
                 }}
               >

@@ -16,7 +16,7 @@ import {
 import React from "react";
 import { useState } from "react";
 import { useEffect } from "react";
-import { useParams } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import { appBrain, idGenerator } from "../AppBrain";
 import CustomButton from "../components/button/button";
 import Header from "../components/Header";
@@ -518,6 +518,18 @@ const OrderPage = () => {
                 </p>
               </div>
               <div className="mt-6 flex flex-col gap-6">
+                <Link
+                  to="/print-waybill"
+                  target="_blank"
+                  onClick={() => {
+                    localStorage.setItem(
+                      "state",
+                      JSON.stringify({ order, customer })
+                    );
+                  }}
+                >
+                  <CustomButton>Print Order</CustomButton>
+                </Link>
                 {!order.paid && (
                   <CustomButton handleClick={() => openModal("payment-modal")}>
                     Enter Payment Info
