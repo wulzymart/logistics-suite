@@ -43,6 +43,7 @@
   "scripts": {
     "start": "react-app-rewired start",
     "build": "react-app-rewired build",
+    "postbuild": "rimraf build/static/**/*.map",
     "test": "react-app-rewired test",
     "eject": "react-scripts eject"
   },
