@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { useUserContext } from "../contexts/CurrentUser.Context";
 import {
   collection,
@@ -58,9 +58,7 @@ const Summary = () => {
     const snapshot = await getCountFromServer(q);
     setStatInOrdCt(snapshot.data().count);
   };
-  staffOrderCount();
-  stationOrderCount();
-  stationInboundOrderCount();
+
   const getQuery = async (query, setCount) => {
     const snapshot = await getCountFromServer(query);
     setCount(snapshot.data().count);
@@ -90,11 +88,7 @@ const Summary = () => {
     where("transferStation", "==", stationName),
     where("deliveryStatus", "==", "Set to leave transfer station")
   );
-  getQuery(warehouseinDestQuery, setInWhd);
-  getQuery(warehouseinTrQuery, setInWht);
-  getQuery(warehouseOutnewQuery, setOutWhnew);
-  getQuery(warehouseOutnoDispatchQuery, setoutWhtnoD);
-  getQuery(warehouseOutnoDispatchTrQuery, setTrOutWh);
+
   const userData = {
     "Station Name": stationName,
     "User ID": currentUser.id,
@@ -105,6 +99,16 @@ const Summary = () => {
     "Station Incoming Count": statInOrdCt,
     "Station Warehouse": inWhd + inWht + outWhtnoD + outWhnew + trOutWh,
   };
+  useEffect(() => {
+    staffOrderCount();
+    stationOrderCount();
+    stationInboundOrderCount();
+    getQuery(warehouseinDestQuery, setInWhd);
+    getQuery(warehouseinTrQuery, setInWht);
+    getQuery(warehouseOutnewQuery, setOutWhnew);
+    getQuery(warehouseOutnoDispatchQuery, setoutWhtnoD);
+    getQuery(warehouseOutnoDispatchTrQuery, setTrOutWh);
+  }, []);
   return (
     <div>
       <div className="w-full flex justify-between text-pink-600 mb-16">
