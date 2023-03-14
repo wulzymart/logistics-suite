@@ -49,7 +49,7 @@ export const appBrain = {
   ],
   interCityOptions: ["Yes", "No"],
 
-  serviceTypeOptions: ["Regular", "Express Delivery"],
+  serviceTypeOptions: ["Regular", "Express"],
   shipmentCartegory: {
     Document: { price: 1500 },
     Cargo: { price: 200, weight: { min: 1, max: 8 } },

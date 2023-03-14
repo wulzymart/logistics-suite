@@ -63,8 +63,10 @@ const OrderForm = () => {
       )
     );
   };
+  const [express, setExpress] = useState(false);
   const Reduction = order.intraCity === "Yes" ? 0.6 : 1;
-  const serviceFactor = order.deliveryService === "Express" ? 3 : 1;
+  const serviceFactor = express ? 3 : 1;
+
   const ecom = 0.6;
   const priceFactor =
     Reduction *
@@ -147,6 +149,9 @@ const OrderForm = () => {
                       required
                       options={appBrain.serviceTypeOptions}
                       handleChange={(e) => {
+                        e.target.value === "Express"
+                          ? setExpress(true)
+                          : setExpress(false);
                         dispatch(setDeliveryService(e.target.value));
                         dispatch(setOriginStation(currentUser.station));
                         dispatch(
