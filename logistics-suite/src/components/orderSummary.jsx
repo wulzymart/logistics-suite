@@ -1,7 +1,7 @@
 import React from "react";
 import { useSelector } from "react-redux";
 
-import { default as Logo } from "../components/assets/fll1.png";
+import { default as Logo } from "../components/assets/fll.png";
 import { useAppConfigContext } from "../contexts/AppConfig.context";
 import { useUserContext } from "../contexts/CurrentUser.Context";
 const OrderSummary = () => {
@@ -18,7 +18,7 @@ const OrderSummary = () => {
         <img className="h-24" src={Logo} alt="fll logo" />
         <div className="flex flex-col gap-2">
           <h1 className="font-bold text-3xl text-center text-blue-800">
-            First Line Logistics Nigeria Limited
+            First Line Logistics Limited
           </h1>
           <p className="text-center text-md  text-[#ff2600] font-medium">
             Head Office: km 57, Agasa junction opposite Dr. Ado Ibrahim Building
@@ -40,9 +40,6 @@ const OrderSummary = () => {
       {/* Order info */}
       <div className="flex flex-col md:flex-row items-center">
         <div className="flex flex-col gap-3 w-full mb-8">
-          <p>
-            Order Number: <span>{order.id}</span>
-          </p>
           <p>Tracking Number: {order.id}</p>
           <p>Pay on delivery: {order.payOnDelivery}</p>
           <p>
@@ -117,7 +114,7 @@ const OrderSummary = () => {
           <div className="flex flex-col gap-2">
             <div>
               <span className="font-medium">Phone Number: </span>
-              <span>{receiver.phone}</span>
+              <span>{receiver.phoneNumber}</span>
             </div>
             <div>
               <span className="font-medium">Name: </span>

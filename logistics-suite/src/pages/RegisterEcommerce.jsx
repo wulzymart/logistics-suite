@@ -59,7 +59,7 @@ const RegisterEcommerce = () => {
         const paymentId = idGenerator(10);
         axios({
           method: "post",
-          url: `https://kind-waders-hare.cyclic.app/ecommerce-user`,
+          url: `https://server.firstlinelogistics.ng/ecommerce-user`,
           data: {
             customer,
           },

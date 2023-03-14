@@ -1,5 +1,4 @@
-export let states = {};
-export const loadStates = (data) => (states = data);
+import axios from "axios";
 
 export function idGenerator(n) {
   let id = "";
@@ -39,17 +38,6 @@ export const themeColors = [
   },
 ];
 
-export const users = {};
-export let customers = {};
-export const setCustomers = (id, object) => {
-  customers = { ...customers, [id]: object };
-};
-export let orders = {};
-export const setOrders = (id, object) => {
-  orders = { ...orders, [id]: object };
-};
-export const routes = {};
-export const stations = {};
 export const appBrain = {
   customerOptions: ["Yes", "No"],
   customersSex: ["Male", " Female"],
@@ -96,7 +84,6 @@ export const appBrain = {
 
   //to get office stations
   officeStations: ["Head Office", "Okene Branch", "Ibadan Branch"],
-  stateList: Object.keys(states).map((key) => key),
   jobDesignations: [
     "Human Resource Manager",
     "Branch Manager",
@@ -105,4 +92,79 @@ export const appBrain = {
     "Driver",
   ],
   accessRights: ["Normal User", "Admin", "Super Admin"],
+};
+export const sendBooked = async (phoneNmber, orderNumber) => {
+  await axios.post(
+    "https://api.ng.termii.com/api/sms/send",
+    {
+      to: phoneNmber,
+      from: "FLL NG LTD",
+      sms: `Your order with tracking number ${orderNumber} has been booked and awaiting awaiting dispatch.
+      Go to https://firstlinelogistics.ng/tracking to track your order`,
+      type: "plain",
+      api_key: "TLyU5njwth1Dl2UVtJWjzRAlPZDdNqz4ZDYZSyw8gMTMJZTDx7cNtvvnFcQpEl",
+      channel: "generic",
+    },
+    { headers: { "Content-Type": "application/json" } }
+  );
+};
+export const sendDispatchedSender = async (phoneNmber, orderNumber) => {
+  await axios.post(
+    "https://api.ng.termii.com/api/sms/send",
+    {
+      to: phoneNmber,
+      from: "FLL NG LTD",
+      sms: `Your order with tracking number ${orderNumber} has been dispatched you will be notified when it is delivered.
+      Go to https://firstlinelogistics.ng/tracking to track your order`,
+      type: "plain",
+      api_key: "TLyU5njwth1Dl2UVtJWjzRAlPZDdNqz4ZDYZSyw8gMTMJZTDx7cNtvvnFcQpEl",
+      channel: "generic",
+    },
+    { headers: { "Content-Type": "application/json" } }
+  );
+};
+export const sendDispatchedReceiver = async (phoneNmber, orderNumber) => {
+  await axios.post(
+    "https://api.ng.termii.com/api/sms/send",
+    {
+      to: phoneNmber,
+      from: "FLL NG LTD",
+      sms: `Your order with tracking number ${orderNumber} has arrived the destination station, Please ensure a valid means of identification for pickup or delivery.
+      Go to https://firstlinelogistics.ng/tracking to track your order`,
+      type: "plain",
+      api_key: "TLyU5njwth1Dl2UVtJWjzRAlPZDdNqz4ZDYZSyw8gMTMJZTDx7cNtvvnFcQpEl",
+      channel: "generic",
+    },
+    { headers: { "Content-Type": "application/json" } }
+  );
+};
+export const sendArrived = async (phoneNmber, orderNumber) => {
+  await axios.post(
+    "https://api.ng.termii.com/api/sms/send",
+    {
+      to: phoneNmber,
+      from: "FLL NG LTD",
+      sms: `Your order with tracking number ${orderNumber} has been dispatched you will be notified when it is arrives and alerted for pickup.
+      Go to https://firstlinelogistics.ng/tracking to track your order`,
+      type: "plain",
+      api_key: "TLyU5njwth1Dl2UVtJWjzRAlPZDdNqz4ZDYZSyw8gMTMJZTDx7cNtvvnFcQpEl",
+      channel: "generic",
+    },
+    { headers: { "Content-Type": "application/json" } }
+  );
+};
+export const sendDelivered = async (sender, receiver, orderNumber) => {
+  await axios.post(
+    "https://api.ng.termii.com/api/sms/send",
+    {
+      to: [sender, receiver],
+      from: "FLL NG LTD",
+      sms: `Your order with tracking number ${orderNumber} has now been delivered to the receiver.
+      Thank You for choosing First Line Logistics`,
+      type: "plain",
+      api_key: "TLyU5njwth1Dl2UVtJWjzRAlPZDdNqz4ZDYZSyw8gMTMJZTDx7cNtvvnFcQpEl",
+      channel: "generic",
+    },
+    { headers: { "Content-Type": "application/json" } }
+  );
 };

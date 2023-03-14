@@ -56,7 +56,7 @@ const AddStation = () => {
       Object.assign(newStates[state].stations, {
         [stationName]: station,
       });
-      axios.post(`https://kind-waders-hare.cyclic.app/states`, newStates);
+      axios.post(`https://server.firstlinelogistics.ng/states`, newStates);
     }
   };
   const { openModal, closeModal } = useThemeContext();
@@ -74,6 +74,7 @@ const AddStation = () => {
       setStrAddress("");
       setId("");
       setPin("");
+      setShortCode("");
     } else alert("Incorrect Pin");
   };
   return (
@@ -139,7 +140,7 @@ const AddStation = () => {
         <div className="flex gap-4 flex-col w-full ">
           <p>State</p>
           <Select
-            options={statesList ? statesList : ["loading"]}
+            options={statesList ? statesList : [""]}
             name="stationState"
             value={state}
             handleChange={(e) => setStateNId(e.target.value)}
@@ -150,7 +151,7 @@ const AddStation = () => {
         <div className="flex flex-col gap-4 w-full ">
           <p>LGA</p>
           <Select
-            options={state ? states[state].lgas : ["awaiting state select"]}
+            options={state ? states[state].lgas : [""]}
             name="stationLga"
             value={lga}
             handleChange={(e) => {

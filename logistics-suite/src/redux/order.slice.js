@@ -6,6 +6,7 @@ const initialState = {
   customerId: "",
   customerName: "",
   customerAddress: "",
+  customerPhoneNumber: "",
   originStation: "",
   originStationId: "",
   destinationStation: "",
@@ -159,6 +160,7 @@ const orderSlice = createSlice({
       state.customerName =
         action.payload.firstName + " " + action.payload.lastName;
       state.customerAddress = action.payload.address;
+      state.customerPhoneNumber = action.payload.phoneNumber;
     },
   },
 });

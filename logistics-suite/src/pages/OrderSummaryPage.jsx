@@ -4,7 +4,7 @@ import CustomButton from "../components/button/button";
 import OrderSummary from "../components/orderSummary";
 import Modal from "../components/Modal";
 import Select from "../components/select-input/select";
-import { appBrain, idGenerator } from "../AppBrain";
+import { appBrain, idGenerator, sendBooked } from "../AppBrain";
 import {
   setPayOnDelivery,
   setPaymentMode,
@@ -71,6 +71,8 @@ const OrderSummaryPage = () => {
           time: today.toLocaleString("en-US"),
         },
       ],
+    }).then(() => {
+      sendBooked(customer.phoneNumber, order.id);
     });
 
     if (order.paymentMode === "Wallet") {
@@ -206,7 +208,7 @@ const OrderSummaryPage = () => {
                 dispatch(resetOrder());
                 dispatch(resetCustomer());
                 setNewCustomer("");
-                navigate("/");
+                navigate("/new-waybill");
               }}
             >
               Finish
@@ -218,13 +220,15 @@ const OrderSummaryPage = () => {
           </CustomButton>
         )
       ) : (
-        <CustomButton
-          handleClick={() => {
-            openModal("payment-modal");
-          }}
-        >
-          Enter Payment Information
-        </CustomButton>
+        !order.paid && (
+          <CustomButton
+            handleClick={() => {
+              openModal("payment-modal");
+            }}
+          >
+            Enter Payment Information
+          </CustomButton>
+        )
       )}
 
       <Modal id="payment-modal" title="Enter Payment Details">

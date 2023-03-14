@@ -64,9 +64,12 @@ const OrderForm = () => {
     );
   };
   const Reduction = order.intraCity === "Yes" ? 0.6 : 1;
+  const serviceFactor = order.deliveryService === "Express" ? 3 : 1;
   const ecom = 0.6;
   const priceFactor =
-    customer.customerType === "E-commerce" ? ecom : 1 * Reduction;
+    Reduction *
+    serviceFactor *
+    (customer.customerType === "E-commerce" ? ecom : 1);
   return (
     newCustomer &&
     pricing && (

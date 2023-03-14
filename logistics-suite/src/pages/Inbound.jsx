@@ -2,6 +2,7 @@ import { doc, serverTimestamp, setDoc } from "firebase/firestore";
 import React from "react";
 import { useState } from "react";
 import { Link } from "react-router-dom";
+import { sendArrived } from "../AppBrain";
 import CustomButton from "../components/button/button";
 import Header from "../components/Header";
 import Modal from "../components/Modal";
@@ -39,6 +40,7 @@ const InBound = () => {
         transshipIn,
         history,
         trackingInfo,
+        receiver,
       } = inRowsMap[id];
       if (deliveryStatus === "Dispatched") {
         history.push({
@@ -76,7 +78,7 @@ const InBound = () => {
               arrivedAtDestinationStation: serverTimestamp(),
             },
             { merge: true }
-          );
+          ).then(() => sendArrived(receiver.phoneNumber, id));
         } else
           setDoc(
             orderRef,

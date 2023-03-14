@@ -1,6 +1,6 @@
 import React from "react";
 import { useAppConfigContext } from "../contexts/AppConfig.context";
-import { default as Logo } from "../components/assets/fll1.png";
+import { default as Logo } from "../components/assets/fll.png";
 import ReactToPrint from "react-to-print";
 
 class ToBePrinted extends React.Component {
@@ -18,7 +18,7 @@ class ToBePrinted extends React.Component {
               <img className="h-24" src={Logo} alt="fll logo" />
               <div className="flex flex-col gap-2">
                 <h1 className="font-bold text-3xl text-center text-blue-800">
-                  First Line Logistics Nigeria Limited
+                  First Line Logistics Limited
                 </h1>
                 <p className="text-center text-md  text-[#ff2600] font-medium">
                   Head Office: km 57, Agasa junction opposite Dr. Ado Ibrahim
@@ -43,9 +43,6 @@ class ToBePrinted extends React.Component {
             {/* Order info */}
             <div className="flex flex-col md:flex-row items-center">
               <div className="flex flex-col gap-3 w-full mb-8">
-                <p>
-                  Order Number: <span>{order.id}</span>
-                </p>
                 <p>Tracking Number: {order.id}</p>
                 <p>Pay on delivery: {order.payOnDelivery}</p>
                 <p>
@@ -126,7 +123,7 @@ class ToBePrinted extends React.Component {
                 <div className="flex flex-col gap-2">
                   <div>
                     <span className="font-medium">Phone Number: </span>
-                    <span>{receiver.phone}</span>
+                    <span>{receiver.phoneNumber}</span>
                   </div>
                   <div>
                     <span className="font-medium">Name: </span>
@@ -283,9 +280,6 @@ class ToBePrinted extends React.Component {
             {/* Order info */}
             <div className="flex flex-col md:flex-row items-center">
               <div className="flex flex-col gap-3 w-full mb-8">
-                <p>
-                  Order Number: <span>{order.id}</span>
-                </p>
                 <p>Tracking Number: {order.id}</p>
                 <p>Pay on delivery: {order.payOnDelivery}</p>
                 <p>
@@ -366,7 +360,7 @@ class ToBePrinted extends React.Component {
                 <div className="flex flex-col gap-2">
                   <div>
                     <span className="font-medium">Phone Number: </span>
-                    <span>{receiver.phone}</span>
+                    <span>{receiver.phoneNumber}</span>
                   </div>
                   <div>
                     <span className="font-medium">Name: </span>
@@ -610,7 +604,7 @@ class ToBePrinted extends React.Component {
 //               <div className="flex flex-col gap-2">
 //                 <div>
 //                   <span className="font-medium">Phone Number: </span>
-//                   <span>{receiver.phone}</span>
+//                   <span>{receiver.phoneNumber}</span>
 //                 </div>
 //                 <div>
 //                   <span className="font-medium">Name: </span>
@@ -845,7 +839,7 @@ class ToBePrinted extends React.Component {
 //               <div className="flex flex-col gap-2">
 //                 <div>
 //                   <span className="font-medium">Phone Number: </span>
-//                   <span>{receiver.phone}</span>
+//                   <span>{receiver.phoneNumber}</span>
 //                 </div>
 //                 <div>
 //                   <span className="font-medium">Name: </span>

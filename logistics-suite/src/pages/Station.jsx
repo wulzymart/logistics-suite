@@ -2,27 +2,41 @@
 import { TextField } from "@mui/material";
 import { DateTimePicker, LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
+import axios from "axios";
 import {
   collection,
   doc,
   getDoc,
   getDocs,
+  deleteDoc,
   onSnapshot,
   query,
   Timestamp,
   where,
+  setDoc,
 } from "firebase/firestore";
 
 import React, { useEffect, useState } from "react";
+import PhoneInput from "react-phone-input-2";
 import { Link, useParams } from "react-router-dom";
 import CustomButton from "../components/button/button";
 import Header from "../components/Header";
+import Input from "../components/input/input";
+import Modal from "../components/Modal";
+import PinModal from "../components/PinModal";
+import Select from "../components/select-input/select";
 import TableGrid from "../components/TableGrid";
+import { useAppConfigContext } from "../contexts/AppConfig.context";
+import { useUserContext } from "../contexts/CurrentUser.Context";
+import { useThemeContext } from "../contexts/themeContext";
 import { db } from "../firebase/firebase";
 
 const Station = () => {
   const { id } = useParams();
   const [station, setStation] = useState("");
+  const { openModal, closeModal } = useThemeContext();
+  const { currentUser } = useUserContext();
+  const { states, comparePin } = useAppConfigContext();
   function getReceiverName(params) {
     return `${params.row.receiver.firstName || ""} ${
       params.row.receiver.lastName || ""
@@ -274,6 +288,43 @@ const Station = () => {
   const [inEndDate, setInEndDate] = useState(new Date());
   const [outEndDate, setOutEndDate] = useState(new Date());
   const ordersRef = collection(db, "orders");
+  const [phoneNumber1, setPhone1] = useState("");
+  const [phoneNumber2, setPhone2] = useState("");
+  const [lga, setLga] = useState("");
+  const [shortCode, setShortCode] = useState();
+  const [streetAddress, setStreetAddress] = useState("");
+  const [action, setAction] = useState("");
+  const [pin, setPin] = useState("");
+  const deleteStation = () => {
+    deleteDoc(doc(db, "stations", id));
+    const newStates = states;
+    delete newStates[station.address.state].stations[station.name];
+    axios.post(`https://server.firstlinelogistics.ng/states`, newStates);
+    closeModal("pin-modal");
+    closeModal("delete-station");
+  };
+  const editStation = () => {
+    const newStates = states;
+    const newStation = {
+      ...station,
+      id,
+      phoneNumber1,
+      phoneNumber2,
+      shortCode,
+      address: { ...station.address, lga, streetAddress },
+    };
+    newStates[station.address.state].stations[station.name] = { ...newStation };
+    axios.post(`https://server.firstlinelogistics.ng/states`, newStates);
+    setDoc(doc(db, "stations", id), { ...newStation });
+    closeModal("pin-modal");
+    closeModal("edit-station");
+  };
+  const handleSubmit = () => {
+    if (comparePin(pin, currentUser.pin)) {
+      action === "delete" && deleteStation();
+      action === "edit" && editStation();
+    } else alert("Incorrent Pin");
+  };
 
   const inboundQuery = station
     ? query(
@@ -292,7 +343,6 @@ const Station = () => {
       )
     : "";
   async function getInAndOutboudQuery(queried, setRows) {
-   
     await getDocs(queried).then((docs) => {
       const tempData = [];
       docs.forEach((doc) => tempData.push(doc.data()));
@@ -313,6 +363,11 @@ const Station = () => {
     const getStation = async () => {
       await getDoc(doc(db, "stations", id)).then((doc) => {
         setStation(doc.data());
+        setPhone1(doc.data().phoneNumber1);
+        setPhone2(doc.data().phoneNumber2);
+        setLga(doc.data().address.lga);
+        setShortCode(doc.data().shortCode);
+        setStreetAddress(doc.data().address.streetAddress);
       });
     };
     getStation();
@@ -358,7 +413,7 @@ const Station = () => {
         <Header title="View Station" />
         <div className="w-[100%] rounded overflow-hidden shadow-lg bg-white">
           <div className="px-6 py-4">
-            <div className="font-bold text-xl mb-4">{station.name}</div>
+            <h2 className="font-bold text-xl mb-4">{station.name}</h2>
             <div className="flex flex-wrap gap-x-8 gap-y-4 ">
               <p className="text-gray-700 text-base mb-2">
                 Short code: {station.shortCode}
@@ -380,6 +435,128 @@ const Station = () => {
               </div>
             </div>
           </div>
+        </div>
+        <div className="w-[100%] rounded overflow-hidden shadow-lg bg-white mt-8">
+          <div className="px-6 py-4 w-full flex flex-col md:flex-row gap-y-4 gap-x-6 justify-end">
+            <CustomButton handleClick={() => openModal("edit-station")}>
+              Edit Station Details
+            </CustomButton>
+            <CustomButton handleClick={() => openModal("delete-station")}>
+              Delete Station
+            </CustomButton>
+          </div>
+          <Modal title="Confirm Station Deletion" id="delete-station">
+            <div className="p-8">
+              <p>
+                Are you sure you want to delete station{" "}
+                <em className="font-bold">
+                  {station.name} {station.shortCode}
+                </em>
+              </p>
+              <p className="italic text-red-500 mb-6">
+                This will not be reversible
+              </p>
+              <CustomButton
+                handleClick={() => {
+                  setAction("delete");
+                  openModal("pin-modal");
+                }}
+              >
+                Proceed
+              </CustomButton>
+            </div>
+          </Modal>
+          <Modal title="Edit station" id="edit-station">
+            <div className="p-8">
+              <p className="text-xl text-red-800 mb-8">
+                You are editing {station.name} Please fill in the appropriate
+                information before proceeding
+              </p>
+              <div className="flex flex-col md:flex-row gap-8 mb-8">
+                <div className="flex flex-col gap-4 w-full ">
+                  <p className="min-w-fit">Short Code</p>
+                  <Input
+                    type="text"
+                    value={shortCode}
+                    handleChange={(e) => setShortCode(e.target.value)}
+                  />
+                </div>
+                <div className="flex flex-col gap-4 w-full ">
+                  <p>Phone Number 1</p>
+
+                  <PhoneInput
+                    country={"ng"}
+                    onlyCountries={["ng"]}
+                    prefix="+"
+                    value={phoneNumber1}
+                    onChange={(phone) => {
+                      phone = "+" + phone;
+                      setPhone1(phone);
+                    }}
+                    containerClass={"h-full !w-full rounded-lg"}
+                    inputClass={"!w-full !min-h-full"}
+                  />
+                </div>
+                <div className="flex flex-col gap-4 w-full ">
+                  <p>Phone Number 2</p>
+
+                  <PhoneInput
+                    placeholder="Phone2"
+                    country={"ng"}
+                    onlyCountries={["ng"]}
+                    prefix="+"
+                    value={phoneNumber2}
+                    onChange={(phone) => {
+                      phone = "+" + phone;
+                      setPhone2(phone);
+                    }}
+                    containerClass={" h-full rounded-lg !w-full"}
+                    inputClass={"!w-full !min-h-full"}
+                  />
+                </div>
+              </div>
+              <div className="flex flex-col md:flex-row gap-8 mb-8">
+                <div className="flex flex-col gap-4 w-full ">
+                  <p>LGA</p>
+                  <Select
+                    options={
+                      station.address.state
+                        ? states[station.address.state].lgas
+                        : [""]
+                    }
+                    name="stationLga"
+                    value={lga}
+                    handleChange={(e) => {
+                      setLga(e.target.value);
+                    }}
+                  >
+                    Select LGA
+                  </Select>
+                </div>
+              </div>
+              <p>Address</p>
+              <Input
+                type="text"
+                value={streetAddress}
+                handleChange={(e) => setStreetAddress(e.target.value)}
+              />
+              <div className="w-full mt-8">
+                <CustomButton
+                  handleClick={() => {
+                    setAction("edit");
+                    openModal("pin-modal");
+                  }}
+                >
+                  Save station
+                </CustomButton>
+              </div>
+            </div>
+          </Modal>
+          <PinModal
+            pin={pin}
+            handleChange={(e) => setPin(e.target.value)}
+            handleSubmit={handleSubmit}
+          />
         </div>
         <div className="w-[100%] mt-8 px-6 py-8 first-letter:rounded overflow-hidden shadow-lg bg-white">
           <p className="text-2xl font-bold">Orders in warehouse</p>

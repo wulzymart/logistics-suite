@@ -4,6 +4,7 @@ import Logo from "../components/assets/fll1.png";
 import { getAuth, signInWithEmailAndPassword } from "firebase/auth";
 
 import { app } from "../firebase/firebase";
+import { Link } from "react-router-dom";
 
 const Login = () => {
   const [email, setEmail] = useState("");
@@ -54,6 +55,12 @@ const Login = () => {
         <Button type="submit" onClick={handleSubmit}>
           Submit
         </Button>
+        <Link
+          to="/forgot-password"
+          className="text-blue-600 hover:text-red-500 text-end"
+        >
+          Forgot Your Password?
+        </Link>
       </div>
     </div>
   );

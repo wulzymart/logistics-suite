@@ -29,7 +29,7 @@ const ManagePricelist = () => {
     comparePin(pin, currentUser.pin)
       ? axios({
           method: "post",
-          url: `https://kind-waders-hare.cyclic.app/pricing`,
+          url: `https://server.firstlinelogistics.ng/pricing`,
           data: {
             pricing_,
           },

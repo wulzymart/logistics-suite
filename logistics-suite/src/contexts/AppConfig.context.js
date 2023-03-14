@@ -36,23 +36,23 @@ export const AppConfigContextProvider = ({ children }) => {
   };
 
   useEffect(() => {
-    axios.get(`https://kind-waders-hare.cyclic.app/pricing`).then((data) => {
+    axios.get(`https://server.firstlinelogistics.ng/pricing`).then((data) => {
       setPricing(data.data);
 
       setPricingList(Object.keys(data.data).map((key) => key));
     });
-    axios.get(`https://kind-waders-hare.cyclic.app/states`).then((data) => {
+    axios.get(`https://server.firstlinelogistics.ng/states`).then((data) => {
       setStates(data.data);
 
       setStatesList(Object.keys(data.data).map((key) => key));
     });
-    axios.get(`https://kind-waders-hare.cyclic.app/routes`).then((data) => {
+    axios.get(`https://server.firstlinelogistics.ng/routes`).then((data) => {
       setRoutes(data.data);
       const list = Object.keys(data.data).map((key) => data.data[key].name);
       setRoutesList(list);
     });
 
-    axios.get(`https://kind-waders-hare.cyclic.app/stations`).then((data) => {
+    axios.get(`https://server.firstlinelogistics.ng/stations`).then((data) => {
       const stationsByName = {};
       // eslint-disable-next-line array-callback-return
       Object.keys(data.data).map((key) => {
@@ -66,7 +66,7 @@ export const AppConfigContextProvider = ({ children }) => {
     });
 
     axios
-      .get(`https://kind-waders-hare.cyclic.app/vehicles`, {
+      .get(`https://server.firstlinelogistics.ng/vehicles`, {
         params: { type: "interState" },
       })
       .then(({ data }) => {
@@ -77,7 +77,7 @@ export const AppConfigContextProvider = ({ children }) => {
   useEffect(() => {
     if (stationName) {
       axios
-        .get(`https://kind-waders-hare.cyclic.app/vehicles`, {
+        .get(`https://server.firstlinelogistics.ng/vehicles`, {
           params: { type: "station", station: stationName },
         })
         .then(({ data }) => {

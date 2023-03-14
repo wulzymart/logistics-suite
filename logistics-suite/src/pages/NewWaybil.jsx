@@ -19,7 +19,9 @@ const NewWaybil = () => {
     <div className="dark:text-white dark:bg-black">
       <Header category="form" title="New Waybill" />
       <CustomerForm />
-      <OrderForm />
+      {customer.phoneNumber && customer.phoneNumber.length === 14 && (
+        <OrderForm />
+      )}
       {newCustomer && (
         <div>
           <CustomButton
@@ -38,6 +40,7 @@ const NewWaybil = () => {
                   order.receiver.firstName &&
                   order.receiver.lastName &&
                   order.receiver.phoneNumber &&
+                  order.receiver.phoneNumber.length === 14 &&
                   order.item.description &&
                   order.item.cartegory &&
                   order.item.weight &&
@@ -52,6 +55,7 @@ const NewWaybil = () => {
                   order.receiver.firstName &&
                   order.receiver.lastName &&
                   order.receiver.phoneNumber &&
+                  order.receiver.phoneNumber.length === 14 &&
                   order.item.description &&
                   order.item.cartegory &&
                   order.item.weight &&

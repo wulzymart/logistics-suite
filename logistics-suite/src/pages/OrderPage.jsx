@@ -17,7 +17,14 @@ import React from "react";
 import { useState } from "react";
 import { useEffect } from "react";
 import { Link, useParams } from "react-router-dom";
-import { appBrain, idGenerator } from "../AppBrain";
+import {
+  appBrain,
+  idGenerator,
+  sendArrived,
+  sendDelivered,
+  sendDispatchedReceiver,
+  sendDispatchedSender,
+} from "../AppBrain";
 import CustomButton from "../components/button/button";
 import Header from "../components/Header";
 import Input from "../components/input/input";
@@ -197,7 +204,14 @@ const OrderPage = () => {
     closeModal("trip-unassign");
   };
   const setDispatch = () => {
-    const { deliveryStatus, history, trackingInfo, transshipOut } = order;
+    const {
+      deliveryStatus,
+      history,
+      trackingInfo,
+      transshipOut,
+      customerPhoneNumber,
+      receiver,
+    } = order;
     if (
       deliveryStatus === "Booked for Dispatch" ||
       deliveryStatus === "Set to leave transfer station"
@@ -221,7 +235,10 @@ const OrderPage = () => {
           trackingInfo,
         },
         { merge: true }
-      );
+      ).then(() => {
+        sendDispatchedSender(customerPhoneNumber, id);
+        sendDispatchedReceiver(receiver.phoneNumber, id);
+      });
     } else {
       alert("Order has already been dispatched or not assigned yet");
     }
@@ -235,6 +252,7 @@ const OrderPage = () => {
       history,
       trackingInfo,
       destinationStation,
+      receiver,
     } = order;
     if (deliveryStatus === "Dispatched") {
       history.push({
@@ -271,7 +289,7 @@ const OrderPage = () => {
             arrivedAtDestinationStation: serverTimestamp(),
           },
           { merge: true }
-        );
+        ).then(() => sendArrived(receiver.phoneNumber, id));
       } else
         setDoc(
           orderRef,
@@ -291,7 +309,15 @@ const OrderPage = () => {
     closeModal("arrived");
   };
   const setDelivered = () => {
-    const { deliveryStatus, id, history, trackingInfo, intraCity } = order;
+    const {
+      deliveryStatus,
+      id,
+      history,
+      trackingInfo,
+      intraCity,
+      customerPhoneNumber,
+      receiver,
+    } = order;
 
     history.push({
       info: `Order set as delivered by ${currentUser.displayName}`,
@@ -321,6 +347,7 @@ const OrderPage = () => {
       ).then(() => {
         setReceivedByName("");
         setReceivedByPhone("");
+        sendDelivered(customerPhoneNumber, receiver.phoneNumber, id);
       });
     } else {
       alert("Order is yet to arrive your location");
@@ -937,7 +964,7 @@ const OrderPage = () => {
                     value={receivedByName}
                     handleChange={(e) => {
                       setReceivedByName(e.target.value);
-                      console.log(e.target.value);
+                     
                     }}
                   />
                 </div>

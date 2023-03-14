@@ -2,6 +2,7 @@ import { doc, setDoc } from "firebase/firestore";
 import React from "react";
 import { useState } from "react";
 import { Link } from "react-router-dom";
+import { sendDispatchedReceiver, sendDispatchedSender } from "../AppBrain";
 import CustomButton from "../components/button/button";
 import Header from "../components/Header";
 import Modal from "../components/Modal";
@@ -236,8 +237,14 @@ const OutBound = () => {
   const setDispatch = () => {
     let uneditableOrders = false;
     selectedIds.forEach((id) => {
-      const { deliveryStatus, history, trackingInfo, transshipOut } =
-        outRowsMap[id];
+      const {
+        deliveryStatus,
+        history,
+        trackingInfo,
+        transshipOut,
+        customerPhoneNumber,
+        receiver,
+      } = outRowsMap[id];
       if (
         deliveryStatus === "Booked for Dispatch" ||
         deliveryStatus === "Set to leave transfer station"
@@ -262,7 +269,10 @@ const OutBound = () => {
             history,
           },
           { merge: true }
-        );
+        ).then(() => {
+          sendDispatchedSender(customerPhoneNumber, id);
+          sendDispatchedReceiver(receiver.phoneNumber, id);
+        });
       } else {
         uneditableOrders = true;
       }

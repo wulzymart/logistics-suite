@@ -225,7 +225,6 @@ const AssignTrip = () => {
           Object.assign(tempData, { [doc.data().id]: doc.data() });
           tempList.push(doc.data().id);
         });
-        console.log("loaded", tempData);
         setTrips(tempData);
         setTripsList(tempList);
       });

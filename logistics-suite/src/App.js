@@ -53,6 +53,7 @@ import JobAdverts from "./pages/JobAdverts";
 import AddTripStaff from "./pages/AddTripStaff";
 import TripStaffs from "./pages/TripStaffs";
 import TripStaff from "./pages/TripStaff";
+import ForgotPassword from "./pages/PasswordReset";
 
 function App() {
   const { currentMode } = useThemeContext();
@@ -167,6 +168,10 @@ function App() {
 
                   <Route element={<LoginRoute />}>
                     <Route path="/login" element={<Login />} />
+                    <Route
+                      path="/forgot-password"
+                      element={<ForgotPassword />}
+                    />
                   </Route>
                 </Routes>
               </NewWaybillProvider>
